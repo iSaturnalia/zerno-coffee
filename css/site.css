@@ -216,9 +216,11 @@ body.dark-ui .dots button { color: var(--cream); }
 .ritual-head { display: grid; justify-items: center; gap: 12px; text-align: center; }
 .ch4 .title { font-size: clamp(30px, 4.2vw, 76px); }
 .ch4 .title em { font-size: 1.15em; }
-/* the strip itself must not catch clicks: it overlaps the hero button while the cards are hidden */
+/* The strip must not catch taps while the cards are hidden: it overlaps the
+   hero button. JS adds .live once the menu scene is on screen, so on phones
+   the strip becomes a real scroll area that can be swiped. */
 .cards { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; pointer-events: none; }
-.card { pointer-events: auto; }
+.cards.live { pointer-events: auto; }
 .card {
   background: var(--card); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   border-radius: 18px; padding: 10px 10px 12px;

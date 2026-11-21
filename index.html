@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Manrope:wght@400;500;700&family=Unbounded:wght@500;800&display=swap" rel="stylesheet">
 <!-- bump ?v= on every release: GitHub Pages lets browsers cache files for 10 min -->
-<link rel="stylesheet" href="css/site.css?v=4">
+<link rel="stylesheet" href="css/site.css?v=5">
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -112,7 +112,8 @@
           <div class="label"><span class="n">04</span><i></i><span>Ритуал</span></div>
           <h2 class="title"><span class="ln"><span>Выбери свой <em class="script">ритуал</em></span></span></h2>
         </div>
-        <ul class="cards" id="cards">
+        <!-- data-lenis-prevent-touch: swipes on the strip stay native so it scrolls sideways -->
+        <ul class="cards" id="cards" data-lenis-prevent-touch>
           <li class="card" data-thumb="espresso"><div class="ph"></div><h3>Эспрессо</h3><div class="row"><span>180 ₽</span><button aria-label="Добавить эспрессо">+</button></div></li>
           <li class="card" data-thumb="pourover"><div class="ph"></div><h3>Пуровер V60</h3><div class="row"><span>260 ₽</span><button aria-label="Добавить пуровер">+</button></div></li>
           <li class="card" data-thumb="latte"><div class="ph"></div><h3>Капучино</h3><div class="row"><span>240 ₽</span><button aria-label="Добавить капучино">+</button></div></li>
@@ -171,6 +172,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-<script type="module" src="js/site.js?v=4"></script>
+<script type="module" src="js/site.js?v=5"></script>
 </body>
 </html>

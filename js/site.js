@@ -3,7 +3,7 @@
 // its smoothed time `p` drives both the text overlays and the 3D scene.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { M, beanGeometry, createGrinder, createKettle, createPourOver, createCup, createDrop, createBeanPile, createSteam } from './models.js?v=4'; // keep ?v= in step with index.html
+import { M, beanGeometry, createGrinder, createKettle, createPourOver, createCup, createDrop, createBeanPile, createSteam } from './models.js?v=5'; // keep ?v= in step with index.html
 
 const { gsap, ScrollTrigger } = window;
 gsap.registerPlugin(ScrollTrigger);
@@ -241,6 +241,19 @@ let lastDark = null;
 
 let hoverSpin = 0;
 
+// Sets leave by flying up or sinking down. They are hidden only once they are
+// fully off screen, so nothing pops out mid-frame — on a phone the camera sits
+// far back and sees a lot more height than on a desktop.
+const _sp = new THREE.Vector3();
+function onScreen(obj, yBottom, yTop) {
+  _sp.set(obj.position.x, obj.position.y + yBottom, obj.position.z).project(camera);
+  const bottom = _sp.y;
+  _sp.set(obj.position.x, obj.position.y + yTop, obj.position.z).project(camera);
+  return !(bottom > 1.02 || _sp.y < -1.02);
+}
+const cardsEl = $('#cards');
+let cardsLive = false;
+
 function update(p, dt) {
   clock += dt;
   const follow = 1 - Math.exp(-dt * 4);
@@ -255,9 +268,10 @@ function update(p, dt) {
   const fill = ss(0.04, 0.72, p);
   grinder.userData.setFill(fill);
   grinder.userData.setExplode(ss(1.15, 1.75, p));
-  grinder.position.y = 9 * ss(1.85, 2.12, p) - 0.5 * (1 - intro.v);
+  // the exploded grinder lifts away with a slow start, so the eye can follow it out
+  grinder.position.y = 20 * Math.pow(ss(1.82, 2.4, p), 1.6) - 0.5 * (1 - intro.v);
   grinder.rotation.y = lerp(-0.3, 0.35, ss(0, 1.9, p)) - 0.6 * (1 - intro.v) + hoverSpin;
-  grinder.visible = p < 2.2;
+  grinder.visible = p < 2.5 && onScreen(grinder, 0, 5.6);
   if (grinder.visible) grinder.userData.update(dt);
 
   // falling beans while the hopper fills
@@ -279,8 +293,8 @@ function update(p, dt) {
   }
 
   /* pour-over + kettle */
-  pourSet.position.y = -7 * (1 - ss(1.88, 2.18, p)) + 7 * ss(2.86, 3.1, p);
-  pourSet.visible = p > 1.85 && p < 3.15;
+  pourSet.position.y = -14 * (1 - ss(1.88, 2.22, p)) + 18 * Math.pow(ss(2.84, 3.3, p), 1.6);
+  pourSet.visible = p > 1.85 && p < 3.4 && onScreen(pourSet, 0, 4.3);
   const tilt = -0.42 * ss(2.22, 2.42, p) * (1 - ss(2.68, 2.84, p));
   kettle.rotation.z = tilt;
   kettle.position.x = -2.39 - 0.7 * (1 - ss(2.08, 2.3, p));
@@ -312,12 +326,12 @@ function update(p, dt) {
   }
 
   /* drop */
-  dropSet.position.y = -5 * (1 - ss(2.92, 3.14, p)) - 6 * ss(3.86, 4.1, p);
-  dropSet.visible = p > 2.9 && p < 4.12;
+  dropSet.position.y = -10 * (1 - ss(2.92, 3.16, p)) - 14 * Math.pow(ss(3.84, 4.3, p), 1.6);
+  dropSet.visible = p > 2.9 && p < 4.4 && onScreen(dropSet, -0.3, 2.7);
   if (dropSet.visible) dropSet.userData.update(reduceMotion ? 0 : dt);
 
   /* cup */
-  cup.position.y = -4 * (1 - ss(3.92, 4.16, p));
+  cup.position.y = -8 * (1 - ss(3.92, 4.2, p));
   cup.rotation.y = lerp(-0.9, -0.2, ss(3.95, 5, p));
   cup.visible = p > 3.9;
   if (cup.visible) {
@@ -335,6 +349,9 @@ function update(p, dt) {
   const warmth = ss(2.0, 2.2, p) * (1 - ss(2.85, 3.0, p)) + ss(4.0, 4.2, p);
   key.color.copy(neutral).lerp(warm, warmth);
   sun.style.opacity = (warmth * 0.9).toFixed(3);
+
+  const live = p > 4.25;
+  if (live !== cardsLive) { cardsLive = live; cardsEl.classList.toggle('live', live); }
 
   const dark = p > 2.98 && p < 3.95;
   if (dark !== lastDark) { lastDark = dark; document.body.classList.toggle('dark-ui', dark); }
@@ -380,8 +397,6 @@ if (!reduceMotion && window.Lenis) {
     touchMultiplier: 1,
     touchInertiaMultiplier: 22, // a flick coasts, but not across half the site
     virtualScroll(e) {
-      // let horizontal swipes through to the menu-card strip on phones
-      if (e.event.type.startsWith('touch') && e.event.target.closest?.('.cards') && Math.abs(e.deltaX) > Math.abs(e.deltaY)) return false;
       if (e.event.type === 'touchend') {
         // Lenis turns finger speed into the coast distance (velocity × inertia),
         // ignoring deltaY, so cap the speed itself: a flick coasts ≤ ~1.2 screens
