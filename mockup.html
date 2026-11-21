@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ЗЕРНО — макет</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Manrope:wght@400;500;700&family=Unbounded:wght@500;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --studio: #e9e8e6;
+    --ink: #141210;
+    --accent: #bf511b;
+    --accent-on-dark: #f08a55;
+    --coffee: #2a1a12;
+    --cream: #f3ece3;
+    --page: #121110;
+    --page-text: #ece8e3;
+    --muted: #9b948c;
+    --line: #2b2826;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--page);
+    color: var(--page-text);
+    font-family: Manrope, system-ui, sans-serif;
+    line-height: 1.5;
+    padding: 56px 16px 96px;
+  }
+  .wrap { max-width: 1320px; margin: 0 auto; }
+
+  /* ---------- page header ---------- */
+  .doc-head { margin-bottom: 56px; max-width: 760px; }
+  .doc-head .kicker { color: var(--accent-on-dark); font-weight: 700; letter-spacing: .14em; font-size: 12px; text-transform: uppercase; }
+  .doc-head h1 { font-family: Unbounded, sans-serif; font-weight: 800; font-size: clamp(32px, 5vw, 56px); line-height: 1; margin: 12px 0 16px; letter-spacing: -.02em; }
+  .doc-head p { color: var(--muted); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 20px; font-size: 13px; color: var(--muted); }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: -1px; }
+  .legend .l-video::before { background: var(--accent); }
+  .legend .l-text::before { background: #7fb0ff; }
+  .legend .l-ui::before { background: #9bd49b; }
+
+  /* ---------- scene row ---------- */
+  .scene { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 32px; align-items: start; padding: 40px 0; border-top: 1px solid var(--line); }
+  .notes h2 { font-family: Unbounded, sans-serif; font-weight: 800; font-size: 22px; line-height: 1.15; margin: 6px 0 4px; }
+  .notes .num { color: var(--accent-on-dark); font-weight: 700; font-size: 12px; letter-spacing: .14em; }
+  .notes .range { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+  .steps { list-style: none; display: grid; gap: 12px; }
+  .steps li { display: grid; grid-template-columns: 56px 1fr; gap: 10px; font-size: 14px; }
+  .steps .at { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted); padding-top: 2px; }
+  .steps .t { padding-left: 12px; border-left: 2px solid var(--line); }
+  .steps .t.video { border-color: var(--accent); }
+  .steps .t.text { border-color: #7fb0ff; }
+  .steps .t.ui { border-color: #9bd49b; }
+
+  /* ---------- frame (desktop screen) ---------- */
+  .frame {
+    container-type: inline-size;
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--studio);
+    color: var(--ink);
+    box-shadow: 0 30px 80px -30px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .frame * { position: absolute; }
+  .frame .flow, .frame .flow * { position: static; }
+
+  .f-nav { inset: 2.4cqw 3cqw auto 3cqw; display: flex; align-items: center; justify-content: space-between; z-index: 5; }
+  .f-nav * { position: static; }
+  .f-logo { font-family: Unbounded, sans-serif; font-weight: 800; font-size: 1.3cqw; letter-spacing: .04em; }
+  .f-pill { display: flex; gap: 2cqw; padding: .8cqw 2.2cqw; border-radius: 99px; font-size: .9cqw; font-weight: 700; letter-spacing: .12em; background: rgba(255,255,255,.55); backdrop-filter: blur(8px); box-shadow: 0 0 0 1px rgba(20,18,16,.08); }
+  .f-cta { font-size: 1cqw; font-weight: 700; color: #fff; background: var(--accent); padding: .8cqw 1.8cqw; border-radius: 99px; }
+  .dark .f-pill { background: rgba(20,14,10,.45); color: var(--cream); box-shadow: 0 0 0 1px rgba(255,255,255,.12); }
+  .dark .f-logo { color: var(--cream); }
+
+  .dots { right: 2.2cqw; top: 50%; transform: translateY(-50%); display: grid; gap: .9cqw; z-index: 5; }
+  .dots i { position: static; display: block; width: .6cqw; height: .6cqw; border-radius: 50%; background: currentColor; opacity: .25; }
+  .dots i.on { opacity: 1; height: 1.8cqw; border-radius: 99px; background: var(--accent); }
+
+  .label { font-size: .95cqw; font-weight: 700; letter-spacing: .16em; display: flex; align-items: center; gap: 1cqw; }
+  .label * { position: static; }
+  .label b { display: inline-block; width: 4cqw; height: 1px; background: currentColor; opacity: .6; }
+  .title { font-family: Unbounded, sans-serif; font-weight: 800; line-height: .95; letter-spacing: -.01em; text-transform: uppercase; }
+  .script { font-family: Caveat, cursive; font-weight: 600; color: var(--accent); }
+  .body { font-size: 1.15cqw; line-height: 1.5; max-width: 26cqw; opacity: .75; }
+  .btn { display: inline-block; font-size: 1.05cqw; font-weight: 700; color: #fff; background: var(--accent); padding: 1cqw 2.2cqw; border-radius: 99px; }
+
+  /* tag that marks a placeholder for video */
+  .tag { right: 3cqw; bottom: 2.4cqw; font-size: .85cqw; font-weight: 700; letter-spacing: .06em; padding: .4cqw .9cqw; border-radius: 99px; background: var(--accent); color: #fff; white-space: nowrap; z-index: 6; }
+  .tag::before { content: "▶ "; }
+
+  /* ---------- scene 0: hero ---------- */
+  .s0 .obj { left: 50%; top: 14%; width: 23cqw; transform: translateX(-50%); z-index: 3; }
+  .s0 .h-left, .s0 .h-right { top: 40%; font-size: 6.4cqw; z-index: 2; }
+  .s0 .h-left { right: 57%; }
+  .s0 .h-right { left: 57%; }
+  .s0 .h-script { left: 70%; top: 52%; font-size: 3.4cqw; transform: rotate(-6deg); z-index: 4; }
+  .s0 .bl { left: 3cqw; bottom: 5cqw; display: grid; gap: 1.6cqw; }
+  .s0 .bl > * { position: static; }
+
+  /* ---------- scene 1: grind ---------- */
+  .s1 .copy { left: 5cqw; top: 22%; display: grid; gap: 1.8cqw; }
+  .s1 .copy > * { position: static; }
+  .s1 .title { font-size: 5.6cqw; }
+  .s1 .obj { right: 10cqw; top: 14%; width: 42cqw; }
+
+  /* ---------- scene 2: bloom ---------- */
+  .s2 { background:
+      radial-gradient(40% 60% at 70% 20%, rgba(255,240,215,.95), transparent 70%),
+      repeating-linear-gradient(115deg, rgba(120,90,60,.10) 0 2cqw, transparent 2cqw 6cqw),
+      linear-gradient(180deg, #efe3d2 0%, #d9c3a6 62%, #c7ad8c 100%); }
+  .s2 .copy { left: 5cqw; top: 17%; display: grid; gap: 1.4cqw; }
+  .s2 .copy * { position: static; }
+  .s2 .copy .t-wrap { position: relative; }
+  .s2 .copy .t-wrap .script { position: absolute; }
+  .s2 .title { font-size: 5.2cqw; }
+  .s2 .t-wrap { position: relative; }
+  .s2 .t-wrap .script { position: absolute; left: 36cqw; bottom: -.4cqw; font-size: 4.2cqw; transform: rotate(-6deg); }
+  .s2 .stats { display: flex; gap: 3cqw; margin-top: 1cqw; }
+  .s2 .stats > div { position: static; }
+  .s2 .stats strong { display: block; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 2.6cqw; line-height: 1; }
+  .s2 .stats span { font-size: .8cqw; font-weight: 700; letter-spacing: .14em; opacity: .6; }
+  .s2 .obj { right: 6cqw; bottom: 0; width: 54cqw; }
+  .s2 .table { left: 0; right: 0; bottom: 0; height: 22%; background: linear-gradient(180deg, #e9dccb, #d6c2a6); }
+
+  /* ---------- scene 3: extraction ---------- */
+  .s3 { background: linear-gradient(180deg, #d9d6d1 0%, #a59a8e 34%, #3a2619 55%, #1b100a 100%); color: var(--cream); }
+  .s3 .obj { left: 50%; top: 0; width: 26cqw; transform: translateX(-50%); }
+  .s3 .surface { left: 0; right: 0; top: 55%; height: 1px; background: rgba(255,230,200,.35); }
+  .s3 .ripples { left: 50%; top: 55%; width: 40cqw; transform: translate(-50%, -50%); }
+  .s3 .lbl { left: 50%; top: 39%; transform: translateX(-50%); color: var(--cream); opacity: .8; }
+  .s3 .title { left: 50%; top: 44%; transform: translateX(-50%); font-size: 7cqw; white-space: nowrap; color: #fff; text-shadow: 0 .3cqw 1.2cqw rgba(0,0,0,.35); }
+  .s3 .script { left: 71%; top: 55%; font-size: 3.6cqw; transform: rotate(-6deg); }
+  .s3 .bubbles { left: 50%; top: 62%; width: 22cqw; transform: translateX(-50%); }
+
+  /* ---------- scene 4: ritual ---------- */
+  .s4 { background:
+      repeating-linear-gradient(60deg, rgba(90,60,35,.10) 0 3cqw, transparent 3cqw 8cqw),
+      radial-gradient(60% 60% at 50% 30%, #f1e2cf, #cdb08c 80%); }
+  .s4 .lbl { left: 50%; top: 11%; transform: translateX(-50%); }
+  .s4 .title { left: 50%; top: 15%; transform: translateX(-50%); font-size: 3.6cqw; white-space: nowrap; display: flex; align-items: baseline; gap: 1cqw; }
+  .s4 .title .script { position: static; font-size: 4.4cqw; text-transform: none; }
+  .s4 .obj { left: 50%; top: 20%; width: 30cqw; transform: translateX(-50%); }
+  .s4 .cards { left: 4cqw; right: 4cqw; bottom: 4cqw; display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.4cqw; }
+  .s4 .card { position: static; background: rgba(255,255,255,.82); border-radius: 1cqw; padding: .8cqw; box-shadow: 0 1cqw 2.4cqw -1cqw rgba(60,35,15,.35); }
+  .s4 .card.lift { transform: translateY(-1.4cqw); box-shadow: 0 2cqw 3cqw -1cqw rgba(60,35,15,.45); }
+  .s4 .card * { position: static; }
+  .s4 .ph { display: block; aspect-ratio: 1; border-radius: .6cqw; background: linear-gradient(160deg, #3b2a1f, #1a120d); margin-bottom: .7cqw; }
+  .s4 .card:nth-child(2) .ph { background: linear-gradient(160deg, #e7d9c6, #bfa078); }
+  .s4 .card:nth-child(3) .ph { background: linear-gradient(160deg, #d7b48c, #8a5a35); }
+  .s4 .card:nth-child(4) .ph { background: linear-gradient(160deg, #4a3020, #120b07); }
+  .s4 .card:nth-child(5) .ph { background: linear-gradient(160deg, #e9d2b5, #a87a4d); }
+  .s4 .card:nth-child(6) .ph { background: linear-gradient(160deg, #5a3b25, #2a1a12); }
+  .s4 .card b { display: block; font-size: .95cqw; }
+  .s4 .card .row { display: flex; justify-content: space-between; align-items: center; margin-top: .3cqw; }
+  .s4 .card .row span { font-size: .9cqw; opacity: .65; }
+  .s4 .card .row i { font-style: normal; display: grid; place-items: center; width: 1.7cqw; height: 1.7cqw; border-radius: 50%; background: var(--ink); color: #fff; font-size: 1.1cqw; line-height: 1; }
+  .s4 .card.lift .row i { background: var(--accent); }
+  .s4 .tag { top: 9%; bottom: auto; }
+
+  /* ---------- scene 5: visit ---------- */
+  .s5 { background: var(--cream); }
+  .s5 .copy { left: 5cqw; top: 18%; display: grid; gap: 1.6cqw; width: 38cqw; }
+  .s5 .copy > * { position: static; }
+  .s5 .title { font-size: 4.6cqw; }
+  .s5 .info { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4cqw 2cqw; font-size: 1.1cqw; }
+  .s5 .info * { position: static; }
+  .s5 .info small { display: block; font-size: .8cqw; font-weight: 700; letter-spacing: .14em; opacity: .55; margin-bottom: .2cqw; }
+  .s5 .map { right: 5cqw; top: 16%; width: 44cqw; height: 58%; border-radius: 1.4cqw; overflow: hidden;
+      background:
+        linear-gradient(90deg, transparent 48%, rgba(255,255,255,.9) 48% 50%, transparent 50%),
+        linear-gradient(0deg, transparent 60%, rgba(255,255,255,.9) 60% 62%, transparent 62%),
+        linear-gradient(35deg, transparent 30%, rgba(255,255,255,.7) 30% 31.5%, transparent 31.5%),
+        #e2d8ca; }
+  .s5 .pin { left: 73%; top: 52%; width: 2.6cqw; height: 2.6cqw; border-radius: 50% 50% 50% 0; transform: translate(-50%, -100%) rotate(-45deg); background: var(--accent); box-shadow: 0 0 0 .6cqw rgba(232,116,59,.25); }
+  .s5 .foot { left: 0; right: 0; bottom: 0; height: 14%; background: var(--ink); color: var(--cream); display: flex; align-items: center; justify-content: space-between; padding: 0 5cqw; font-size: 1cqw; }
+  .s5 .foot * { position: static; }
+  .s5 .foot .big { font-family: Unbounded, sans-serif; font-weight: 800; font-size: 2.2cqw; }
+
+  /* ---------- mobile frames ---------- */
+  .mobiles { display: flex; gap: 28px; flex-wrap: wrap; }
+  .phone { container-type: inline-size; position: relative; width: 240px; aspect-ratio: 9 / 19.5; border-radius: 28px; overflow: hidden; background: var(--studio); color: var(--ink); box-shadow: 0 30px 60px -30px rgba(0,0,0,.7), 0 0 0 6px #232120; }
+  .phone * { position: absolute; }
+  .phone .p-nav { inset: 7cqw 6cqw auto 6cqw; display: flex; justify-content: space-between; align-items: center; }
+  .phone .p-nav * { position: static; }
+  .phone .p-logo { font-family: Unbounded, sans-serif; font-weight: 800; font-size: 4.6cqw; }
+  .phone .p-burger { width: 9cqw; height: 9cqw; border-radius: 50%; background: rgba(255,255,255,.7); display: grid; place-items: center; font-size: 4cqw; }
+  .phone .title { font-family: Unbounded, sans-serif; font-weight: 800; text-transform: uppercase; line-height: .95; }
+  .p0 .title { left: 6cqw; right: 6cqw; top: 18%; font-size: 13cqw; text-align: center; }
+  .p0 .script { left: 50%; top: 32%; font-size: 9cqw; transform: translateX(10%) rotate(-6deg); }
+  .p0 .obj { left: 50%; top: 38%; width: 46cqw; transform: translateX(-50%); }
+  .p0 .bl { left: 6cqw; right: 6cqw; bottom: 7cqw; display: grid; gap: 4cqw; text-align: center; font-size: 3.6cqw; }
+  .p0 .bl * { position: static; }
+  .p0 .btn { font-size: 4cqw; padding: 3.4cqw; border-radius: 99px; }
+  .p4 { background: radial-gradient(70% 50% at 50% 30%, #f1e2cf, #cdb08c 90%); }
+  .p4 .title { left: 6cqw; top: 17%; font-size: 9cqw; }
+  .p4 .title .script { position: static; font-size: 11cqw; text-transform: none; }
+  .p4 .obj { left: 50%; top: 27%; width: 70cqw; transform: translateX(-50%); }
+  .p4 .strip { left: 6cqw; bottom: 8cqw; display: flex; gap: 3cqw; }
+  .p4 .strip * { position: static; }
+  .p4 .c { width: 34cqw; flex: none; background: rgba(255,255,255,.85); border-radius: 3cqw; padding: 2.4cqw; font-size: 3.4cqw; }
+  .p4 .c .ph { display: block; aspect-ratio: 1; border-radius: 2cqw; background: linear-gradient(160deg, #3b2a1f, #1a120d); margin-bottom: 2cqw; }
+  .p4 .c:nth-child(2) .ph { background: linear-gradient(160deg, #e7d9c6, #bfa078); }
+  .p4 .c:nth-child(3) .ph { background: linear-gradient(160deg, #d7b48c, #8a5a35); }
+  .p4 .swipe { left: 0; right: 0; bottom: 3cqw; text-align: center; font-size: 3cqw; opacity: .6; }
+
+  /* ---------- tokens ---------- */
+  .tokens { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+  .tok { border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .tok .sw { height: 56px; border-radius: 8px; margin-bottom: 10px; }
+  .tok b { display: block; font-size: 14px; }
+  .tok span { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .type-sample { border: 1px solid var(--line); border-radius: 12px; padding: 24px; display: grid; gap: 10px; grid-column: 1 / -1; }
+  .type-sample .a { font-family: Unbounded, sans-serif; font-weight: 800; font-size: clamp(28px, 4vw, 44px); line-height: 1; text-transform: uppercase; }
+  .type-sample .a em { font-family: Caveat, cursive; font-style: normal; color: var(--accent); text-transform: none; font-size: 1.2em; }
+  .type-sample .c { color: var(--muted); font-size: 14px; }
+
+  @media (max-width: 960px) {
+    .scene { grid-template-columns: 1fr; gap: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="doc-head">
+    <div class="kicker">Макет · демо для портфолио</div>
+    <h1>ЗЕРНО — сайт кофейни</h1>
+    <p>Пять сцен, которые проигрываются скроллом, и блок с контактами. Слева — кадр десктопа в ключевой момент сцены, справа — что происходит по мере прокрутки. Оранжевые метки в кадрах отмечают места, где будет видео.</p>
+    <div class="legend">
+      <span class="l-video">видео по скроллу</span>
+      <span class="l-text">появление текста</span>
+      <span class="l-ui">интерфейс</span>
+    </div>
+  </header>
+
+  <!-- ================= SCENE 0 ================= -->
+  <section class="scene">
+    <div class="frame s0">
+      <div class="f-nav"><span class="f-logo">◆ ЗЕРНО</span><span class="f-pill"><span>МЕНЮ</span><span>ЗЁРНА</span><span>О НАС</span><span>КОНТАКТЫ</span></span><span class="f-cta">Заказать</span></div>
+      <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+      <span class="tag">видео 1 · зёрна сыплются в бункер</span>
+      <div class="title h-left">Закажи</div>
+      <div class="title h-right">Кофе</div>
+      <div class="script h-script">свежим</div>
+      <svg class="obj" viewBox="0 0 200 300" aria-hidden="true">
+        <g fill="#3b2416">
+          <ellipse cx="96" cy="8" rx="4" ry="2.6" transform="rotate(30 96 8)"/>
+          <ellipse cx="108" cy="22" rx="4" ry="2.6" transform="rotate(-20 108 22)"/>
+          <ellipse cx="90" cy="38" rx="4" ry="2.6" transform="rotate(60 90 38)"/>
+          <ellipse cx="112" cy="52" rx="4" ry="2.6" transform="rotate(10 112 52)"/>
+          <ellipse cx="100" cy="70" rx="4" ry="2.6" transform="rotate(-40 100 70)"/>
+          <ellipse cx="94" cy="92" rx="4" ry="2.6"/>
+        </g>
+        <path d="M48 40 L152 40 L141 172 L59 172 Z" fill="rgba(255,255,255,.45)" stroke="rgba(20,18,16,.35)" stroke-width="1.5"/>
+        <path d="M56 136 Q100 124 144 136 L141 172 L59 172 Z" fill="#3b2416"/>
+        <path d="M60 50 L66 165" stroke="rgba(255,255,255,.9)" stroke-width="3" stroke-linecap="round"/>
+        <rect x="68" y="172" width="64" height="14" rx="2" fill="#2a2a2c"/>
+        <rect x="22" y="178" width="48" height="5" rx="2" fill="#3a3a3c"/>
+        <rect x="60" y="186" width="80" height="104" rx="7" fill="#1d1d1f"/>
+        <rect x="68" y="192" width="6" height="90" rx="3" fill="rgba(255,255,255,.12)"/>
+      </svg>
+      <div class="bl">
+        <div class="body">Кофе одного происхождения. Мелем под заказ, завариваем медленно.</div>
+        <div><span class="btn">Заказать</span></div>
+      </div>
+    </div>
+    <aside class="notes">
+      <div class="num">СЦЕНА 0</div>
+      <h2>Герой — «Закажи кофе»</h2>
+      <div class="range">0–250vh · закреплена</div>
+      <ul class="steps">
+        <li><span class="at">загрузка</span><span class="t text">«Закажи» и «Кофе» въезжают с краёв за бункер, «свежим» дописывается, подзаголовок и кнопка поднимаются.</span></li>
+        <li><span class="at">0–60%</span><span class="t video">Зёрна сыплются сверху и заполняют бункер.</span></li>
+        <li><span class="at">0–60%</span><span class="t text">Заголовок медленно расходится в стороны (параллакс).</span></li>
+        <li><span class="at">60–100%</span><span class="t text">Тексты уходят вверх и тают, камера приближается к бункеру.</span></li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- ================= SCENE 1 ================= -->
+  <section class="scene">
+    <div class="frame s1">
+      <div class="f-nav"><span class="f-logo">◆ ЗЕРНО</span><span class="f-pill"><span>МЕНЮ</span><span>ЗЁРНА</span><span>О НАС</span><span>КОНТАКТЫ</span></span><span class="f-cta">Заказать</span></div>
+      <div class="dots"><i></i><i class="on"></i><i></i><i></i><i></i></div>
+      <span class="tag">видео 2 · кофемолка разбирается</span>
+      <div class="copy">
+        <div class="label">01 <b></b> ПОМОЛ</div>
+        <div class="title">Точный<br>помол</div>
+        <div class="body">Стальные жернова, 40 ступеней помола. Каждая порция мелется за минуту до заваривания.</div>
+      </div>
+      <svg class="obj" viewBox="0 0 360 300" aria-hidden="true">
+        <path d="M140 10 L220 10 L212 80 L148 80 Z" fill="rgba(255,255,255,.45)" stroke="rgba(20,18,16,.35)" stroke-width="1.5"/>
+        <path d="M146 58 Q180 52 214 58 L212 80 L148 80 Z" fill="#3b2416"/>
+        <rect x="150" y="92" width="60" height="12" rx="2" fill="#2a2a2c"/>
+        <rect x="40" y="70" width="70" height="200" rx="10" fill="#1d1d1f"/>
+        <rect x="48" y="78" width="6" height="184" rx="3" fill="rgba(255,255,255,.12)"/>
+        <rect x="250" y="70" width="70" height="200" rx="10" fill="#1d1d1f"/>
+        <rect x="258" y="78" width="6" height="184" rx="3" fill="rgba(255,255,255,.12)"/>
+        <circle cx="22" cy="190" r="16" fill="#c9c9cc" stroke="#8a8a8e" stroke-width="2"/>
+        <line x1="180" y1="104" x2="180" y2="250" stroke="#8a8a8e" stroke-width="3"/>
+        <path d="M150 170 L210 170 L196 210 L164 210 Z" fill="#a9a9ad" stroke="#6d6d72" stroke-width="1.5"/>
+        <g stroke="#6d6d72" stroke-width="1.2">
+          <line x1="160" y1="176" x2="168" y2="206"/><line x1="172" y1="176" x2="176" y2="206"/>
+          <line x1="188" y1="176" x2="184" y2="206"/><line x1="200" y1="176" x2="192" y2="206"/>
+        </g>
+        <g fill="#5a3a25" opacity=".85">
+          <circle cx="170" cy="222" r="2"/><circle cx="186" cy="228" r="2.2"/><circle cx="176" cy="240" r="1.8"/>
+          <circle cx="192" cy="246" r="1.6"/><circle cx="166" cy="252" r="2"/><circle cx="182" cy="262" r="1.8"/>
+          <circle cx="174" cy="274" r="1.5"/><circle cx="190" cy="280" r="1.4"/>
+        </g>
+      </svg>
+    </div>
+    <aside class="notes">
+      <div class="num">СЦЕНА 1 · 01 — ПОМОЛ</div>
+      <h2>«Точный помол»</h2>
+      <div class="range">250–550vh · закреплена</div>
+      <ul class="steps">
+        <li><span class="at">0–25%</span><span class="t text">Линия метки прорисовывается, заголовок появляется построчно маской снизу вверх.</span></li>
+        <li><span class="at">25–80%</span><span class="t video">Корпус расходится в стороны, видны жернова, сыплется молотый кофе.</span></li>
+        <li><span class="at">25–80%</span><span class="t text">Текст тускнеет до 40%, чтобы не спорить с видео.</span></li>
+        <li><span class="at">80–100%</span><span class="t video">Кадр светлеет и перетекает в тёплую сцену с солнцем.</span></li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- ================= SCENE 2 ================= -->
+  <section class="scene">
+    <div class="frame s2">
+      <div class="table"></div>
+      <div class="f-nav"><span class="f-logo">◆ ЗЕРНО</span><span class="f-pill"><span>МЕНЮ</span><span>ЗЁРНА</span><span>О НАС</span><span>КОНТАКТЫ</span></span><span class="f-cta">Заказать</span></div>
+      <div class="dots"><i></i><i></i><i class="on"></i><i></i><i></i></div>
+      <span class="tag">видео 3 · заливка в пуровер</span>
+      <div class="copy">
+        <div class="label">02 <b></b> РАСКРЫТИЕ</div>
+        <div class="t-wrap"><div class="title">Медленная<br>заливка</div><div class="script">ритуал</div></div>
+        <div class="stats">
+          <div><strong>92°C</strong><span>ВОДА</span></div>
+          <div><strong>18 г</strong><span>КОФЕ</span></div>
+          <div><strong>3:30</strong><span>ВРЕМЯ</span></div>
+        </div>
+      </div>
+      <svg class="obj" viewBox="0 0 420 300" aria-hidden="true">
+        <path d="M310 40 Q300 20 330 18 L380 18 Q400 20 398 44 L396 130 Q396 140 386 140 L320 140 Q308 140 308 130 Z" fill="#1c1b1a"/>
+        <path d="M312 110 C 270 108, 240 120, 214 150" fill="none" stroke="#1c1b1a" stroke-width="7" stroke-linecap="round"/>
+        <rect x="336" y="6" width="34" height="14" rx="4" fill="#2b2a28"/>
+        <path d="M214 150 Q206 170 204 190" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2.5"/>
+        <path d="M150 190 L250 190 L226 246 L174 246 Z" fill="#f6f2ec" stroke="rgba(60,40,20,.25)" stroke-width="1.5"/>
+        <g stroke="rgba(60,40,20,.2)" stroke-width="1.2">
+          <line x1="166" y1="194" x2="182" y2="244"/><line x1="184" y1="194" x2="192" y2="244"/>
+          <line x1="216" y1="194" x2="208" y2="244"/><line x1="234" y1="194" x2="218" y2="244"/>
+        </g>
+        <ellipse cx="200" cy="192" rx="44" ry="7" fill="#4a2d1b"/>
+        <rect x="168" y="246" width="64" height="8" rx="3" fill="#f6f2ec"/>
+        <path d="M170 254 L230 254 Q252 300 240 300 L160 300 Q148 300 170 254 Z" fill="rgba(255,255,255,.35)" stroke="rgba(60,40,20,.25)" stroke-width="1.5"/>
+        <g transform="translate(40 200)">
+          <rect x="0" y="40" width="70" height="60" rx="6" fill="#7a5233"/>
+          <rect x="10" y="0" width="34" height="52" rx="5" fill="rgba(255,255,255,.4)" stroke="rgba(60,40,20,.3)"/>
+          <rect x="12" y="20" width="30" height="30" rx="3" fill="#3b2416"/>
+        </g>
+      </svg>
+    </div>
+    <aside class="notes">
+      <div class="num">СЦЕНА 2 · 02 — РАСКРЫТИЕ</div>
+      <h2>«Медленная заливка»</h2>
+      <div class="range">550–850vh · закреплена</div>
+      <ul class="steps">
+        <li><span class="at">0–20%</span><span class="t text">Метка, заголовок и рукописное «ритуал» появляются по очереди.</span></li>
+        <li><span class="at">20–80%</span><span class="t video">Чайник опускается и наливает воду в воронку.</span></li>
+        <li><span class="at">20–80%</span><span class="t ui">Счётчики идут вместе со скроллом: 20→92°C, 0→18 г, 0:00→3:30.</span></li>
+        <li><span class="at">80–100%</span><span class="t video">Камера опускается под воронку, к струйке кофе.</span></li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- ================= SCENE 3 ================= -->
+  <section class="scene">
+    <div class="frame s3 dark">
+      <div class="f-nav"><span class="f-logo">◆ ЗЕРНО</span><span class="f-pill"><span>МЕНЮ</span><span>ЗЁРНА</span><span>О НАС</span><span>КОНТАКТЫ</span></span><span class="f-cta">Заказать</span></div>
+      <div class="dots"><i></i><i></i><i></i><i class="on"></i><i></i></div>
+      <svg class="obj" viewBox="0 0 200 170" aria-hidden="true">
+        <path d="M60 0 L140 0 Q170 60 150 110 Q140 130 100 130 Q60 130 50 110 Q30 60 60 0 Z" fill="rgba(255,255,255,.28)" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+        <path d="M44 80 Q100 70 156 80 Q160 100 150 112 Q140 130 100 130 Q60 130 50 112 Q40 100 44 80 Z" fill="#2a1a12"/>
+        <line x1="100" y1="130" x2="100" y2="150" stroke="#3a2416" stroke-width="3"/>
+        <path d="M100 152 Q94 162 100 168 Q106 162 100 152 Z" fill="#3a2416"/>
+      </svg>
+      <span class="tag">видео 4 · капля падает в кофе</span>
+      <div class="label lbl">03 <b></b> ЭКСТРАКЦИЯ</div>
+      <div class="title">Каждая капля</div>
+      <div class="script">важна</div>
+      <div class="surface"></div>
+      <svg class="ripples" viewBox="0 0 400 80" aria-hidden="true">
+        <g fill="none" stroke="rgba(255,225,190,.45)">
+          <ellipse cx="200" cy="40" rx="40" ry="7" stroke-width="2"/>
+          <ellipse cx="200" cy="40" rx="90" ry="15" stroke-width="1.5"/>
+          <ellipse cx="200" cy="40" rx="150" ry="25" stroke-width="1"/>
+        </g>
+      </svg>
+      <svg class="bubbles" viewBox="0 0 200 120" aria-hidden="true">
+        <g fill="rgba(255,190,120,.75)">
+          <circle cx="80" cy="20" r="5"/><circle cx="120" cy="34" r="3.5"/><circle cx="96" cy="56" r="4"/>
+          <circle cx="132" cy="74" r="2.5"/><circle cx="70" cy="88" r="3"/><circle cx="104" cy="104" r="2"/>
+        </g>
+      </svg>
+    </div>
+    <aside class="notes">
+      <div class="num">СЦЕНА 3 · 03 — ЭКСТРАКЦИЯ</div>
+      <h2>«Каждая капля важна»</h2>
+      <div class="range">850–1150vh · закреплена</div>
+      <ul class="steps">
+        <li><span class="at">0–40%</span><span class="t video">Камера следит за каплей сверху вниз, фон темнеет от серого к кофейному.</span></li>
+        <li><span class="at">~35%</span><span class="t ui">Навигация и логотип переключаются на светлый вариант.</span></li>
+        <li><span class="at">40–60%</span><span class="t text">Капля касается глади, расходятся круги. Заголовок «лежит» на поверхности.</span></li>
+        <li><span class="at">60–100%</span><span class="t video">Пузырьки поднимаются, текст уходит под поверхность, экран почти чёрный.</span></li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- ================= SCENE 4 ================= -->
+  <section class="scene">
+    <div class="frame s4">
+      <div class="f-nav"><span class="f-logo">◆ ЗЕРНО</span><span class="f-pill"><span>МЕНЮ</span><span>ЗЁРНА</span><span>О НАС</span><span>КОНТАКТЫ</span></span><span class="f-cta">Заказать</span></div>
+      <div class="dots"><i></i><i></i><i></i><i></i><i class="on"></i></div>
+      <div class="label lbl">04 <b></b> РИТУАЛ</div>
+      <div class="title">Выбери свой <span class="script">ритуал</span></div>
+      <svg class="obj" viewBox="0 0 220 200" aria-hidden="true">
+        <ellipse cx="110" cy="112" rx="96" ry="70" fill="#f6f0e8" stroke="rgba(60,40,20,.15)"/>
+        <ellipse cx="110" cy="112" rx="70" ry="50" fill="rgba(60,40,20,.08)"/>
+        <rect x="166" y="80" width="40" height="22" rx="11" fill="#fff" stroke="rgba(60,40,20,.2)"/>
+        <ellipse cx="110" cy="96" rx="62" ry="46" fill="#fff" stroke="rgba(60,40,20,.15)"/>
+        <ellipse cx="110" cy="96" rx="52" ry="38" fill="#2a1a12"/>
+        <ellipse cx="110" cy="96" rx="52" ry="38" fill="none" stroke="#7a4a2a" stroke-width="3"/>
+        <ellipse cx="96" cy="86" rx="16" ry="6" fill="rgba(255,255,255,.18)"/>
+      </svg>
+      <span class="tag">видео 5 · чашка, медленный наезд</span>
+      <div class="cards">
+        <div class="card"><span class="ph"></span><b>Эспрессо</b><div class="row"><span>180 ₽</span><i>+</i></div></div>
+        <div class="card"><span class="ph"></span><b>Фильтр V60</b><div class="row"><span>260 ₽</span><i>+</i></div></div>
+        <div class="card lift"><span class="ph"></span><b>Капучино</b><div class="row"><span>240 ₽</span><i>+</i></div></div>
+        <div class="card"><span class="ph"></span><b>Колд брю</b><div class="row"><span>290 ₽</span><i>+</i></div></div>
+        <div class="card"><span class="ph"></span><b>Раф</b><div class="row"><span>270 ₽</span><i>+</i></div></div>
+        <div class="card"><span class="ph"></span><b>Зерно 250 г</b><div class="row"><span>890 ₽</span><i>+</i></div></div>
+      </div>
+    </div>
+    <aside class="notes">
+      <div class="num">СЦЕНА 4 · 04 — РИТУАЛ</div>
+      <h2>«Выбери свой ритуал»</h2>
+      <div class="range">1150–1400vh · закреплена</div>
+      <ul class="steps">
+        <li><span class="at">0–30%</span><span class="t video">Из темноты проявляется чашка, медленный наезд камеры.</span></li>
+        <li><span class="at">0–30%</span><span class="t text">Метка и заголовок появляются над чашкой.</span></li>
+        <li><span class="at">30–70%</span><span class="t ui">Шесть карточек меню выезжают снизу одна за другой.</span></li>
+        <li><span class="at">hover</span><span class="t ui">Карточка приподнимается, фото увеличивается, «+» становится оранжевым (третья карточка в кадре).</span></li>
+        <li><span class="at">70–100%</span><span class="t ui">Сцена отпускается, дальше обычный скролл.</span></li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- ================= SCENE 5 ================= -->
+  <section class="scene">
+    <div class="frame s5">
+      <div class="f-nav"><span class="f-logo">◆ ЗЕРНО</span><span class="f-pill"><span>МЕНЮ</span><span>ЗЁРНА</span><span>О НАС</span><span>КОНТАКТЫ</span></span><span class="f-cta">Заказать</span></div>
+      <div class="copy">
+        <div class="label">05 <b></b> В ГОСТИ</div>
+        <div class="title">Заходи<br>на чашку</div>
+        <div class="info">
+          <div><small>АДРЕС</small>ул. Примерная, 12</div>
+          <div><small>ЧАСЫ</small>Ежедневно 8:00–22:00</div>
+          <div><small>ТЕЛЕФОН</small>+7 (000) 000-00-00</div>
+          <div><small>СОЦСЕТИ</small>Telegram · VK</div>
+        </div>
+        <div><span class="btn">Построить маршрут</span></div>
+      </div>
+      <div class="map"></div>
+      <div class="pin"></div>
+      <div class="foot"><span class="big">◆ ЗЕРНО</span><span>© 2026 · сайт сделал Твоё Имя</span></div>
+    </div>
+    <aside class="notes">
+      <div class="num">БЛОК 5 · КОНТАКТЫ</div>
+      <h2>«Заходи на чашку»</h2>
+      <div class="range">после сцен · обычный скролл</div>
+      <ul class="steps">
+        <li><span class="at">вход</span><span class="t text">Заголовок и строки контактов появляются снизу по очереди.</span></li>
+        <li><span class="at">вход</span><span class="t ui">Метка на карте «падает» с отскоком.</span></li>
+        <li><span class="at">футер</span><span class="t ui">Ссылка на тебя как автора — это и есть портфолио.</span></li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- ================= MOBILE ================= -->
+  <section class="scene">
+    <div class="mobiles">
+      <div class="phone p0">
+        <div class="p-nav"><span class="p-logo">◆ ЗЕРНО</span><span class="p-burger">≡</span></div>
+        <div class="title">Закажи<br>кофе</div>
+        <div class="script" style="font-family:Caveat,cursive;color:var(--accent)">свежим</div>
+        <svg class="obj" viewBox="0 0 200 300" aria-hidden="true">
+          <path d="M48 40 L152 40 L141 172 L59 172 Z" fill="rgba(255,255,255,.45)" stroke="rgba(20,18,16,.35)" stroke-width="1.5"/>
+          <path d="M56 136 Q100 124 144 136 L141 172 L59 172 Z" fill="#3b2416"/>
+          <rect x="68" y="172" width="64" height="14" rx="2" fill="#2a2a2c"/>
+          <rect x="60" y="186" width="80" height="104" rx="7" fill="#1d1d1f"/>
+        </svg>
+        <div class="bl"><div>Мелем под заказ, завариваем медленно.</div><span class="btn">Заказать</span></div>
+      </div>
+      <div class="phone p4">
+        <div class="p-nav"><span class="p-logo">◆ ЗЕРНО</span><span class="p-burger">≡</span></div>
+        <div class="title">Выбери свой<br><span class="script" style="font-family:Caveat,cursive;color:var(--accent)">ритуал</span></div>
+        <svg class="obj" viewBox="0 0 220 200" aria-hidden="true">
+          <ellipse cx="110" cy="112" rx="96" ry="70" fill="#f6f0e8"/>
+          <ellipse cx="110" cy="96" rx="62" ry="46" fill="#fff"/>
+          <ellipse cx="110" cy="96" rx="52" ry="38" fill="#2a1a12"/>
+        </svg>
+        <div class="strip">
+          <div class="c"><span class="ph"></span><b>Эспрессо</b><br>180 ₽</div>
+          <div class="c"><span class="ph"></span><b>Фильтр V60</b><br>260 ₽</div>
+          <div class="c"><span class="ph"></span><b>Капучино</b><br>240 ₽</div>
+        </div>
+        <div class="swipe">← свайп →</div>
+      </div>
+    </div>
+    <aside class="notes">
+      <div class="num">МОБИЛЬНАЯ ВЕРСИЯ</div>
+      <h2>Те же сцены, вертикально</h2>
+      <div class="range">кадры 720p, примерно вдвое меньше кадров</div>
+      <ul class="steps">
+        <li><span class="at">меню</span><span class="t ui">Навигация сворачивается в бургер, меню открывается на весь экран.</span></li>
+        <li><span class="at">текст</span><span class="t text">Заголовки стоят над объектом, а не по бокам от него.</span></li>
+        <li><span class="at">карточки</span><span class="t ui">Горизонтальная лента со свайпом вместо сетки.</span></li>
+        <li><span class="at">a11y</span><span class="t ui">При «уменьшении движения» показываются статичные кадры.</span></li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- ================= TOKENS ================= -->
+  <section class="scene" style="grid-template-columns:1fr">
+    <div class="notes"><div class="num">СТИЛЬ</div><h2>Цвета и шрифты</h2></div>
+    <div class="tokens">
+      <div class="tok"><div class="sw" style="background:#e9e8e6"></div><b>Студия</b><span>#E9E8E6 · фон сцен 0–1</span></div>
+      <div class="tok"><div class="sw" style="background:#141210;box-shadow:0 0 0 1px #2b2826 inset"></div><b>Чернила</b><span>#141210 · текст, футер</span></div>
+      <div class="tok"><div class="sw" style="background:#e8743b"></div><b>Акцент</b><span>#E8743B · кнопки, рукописный</span></div>
+      <div class="tok"><div class="sw" style="background:#2a1a12"></div><b>Кофе</b><span>#2A1A12 · сцена 3</span></div>
+      <div class="tok"><div class="sw" style="background:#f3ece3"></div><b>Сливки</b><span>#F3ECE3 · контакты</span></div>
+      <div class="type-sample">
+        <div class="a">Каждая капля <em>важна</em></div>
+        <div class="c">Unbounded 800 — заголовки · Caveat 600 — рукописные акценты · Manrope — основной текст</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
