@@ -1,9 +1,34 @@
 // Optional sound, synthesised with Web Audio (no audio files).
 // Off by default; the browser only allows audio after the user turns it on.
 
+// 0.2 s of silence as a WAV data URI (see unlockIOS)
+function silentWav() {
+  const rate = 8000, n = rate / 5, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const str = (o, t) => [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  str(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); str(8, 'WAVEfmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  str(36, 'data'); v.setUint32(40, n * 2, true);
+  let bin = '';
+  new Uint8Array(buf).forEach((b) => { bin += String.fromCharCode(b); });
+  return `data:audio/wav;base64,${btoa(bin)}`;
+}
+
 export function createSound() {
   let ctx = null;
   let master, noise, grind, pour, on = false;
+  let silentEl = null;
+
+  /* iPhone: with the silent switch on, Safari mutes Web Audio unless the page
+     says it plays media. Safari 17+ has audioSession for that; on older iOS,
+     playing a (silent) <audio> element switches the session the same way. */
+  function unlockIOS() {
+    try {
+      if (navigator.audioSession) { navigator.audioSession.type = 'playback'; return; }
+      silentEl ||= Object.assign(new Audio(silentWav()), { loop: true });
+      silentEl.play().catch(() => {});
+    } catch { /* not an iPhone, or not allowed: nothing to do */ }
+  }
 
   function noiseBuffer() {
     const len = ctx.sampleRate * 2;
@@ -65,8 +90,10 @@ export function createSound() {
   return {
     get on() { return on; },
     async toggle() {
+      // everything up to the first await runs inside the tap, as iOS requires
       if (!ctx) init();
       on = !on;
+      if (on) unlockIOS(); else silentEl?.pause();
       if (on) await ctx.resume();
       master.gain.setTargetAtTime(on ? 0.55 : 0, ctx.currentTime, 0.15);
       return on;

@@ -3,13 +3,28 @@
 // its smoothed time `p` drives both the text overlays and the 3D scene.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { M, beanGeometry, createGrinder, createKettle, createPourOver, createCup, createDrop, createBeanPile, createSteam } from './models.js?v=9'; // keep ?v= in step with index.html
-import { initShop } from './shop.js?v=9';
-import { initBrew } from './brew.js?v=9';
-import { createSound } from './sound.js?v=9';
+import { M, beanGeometry, createGrinder, createKettle, createPourOver, createCup, createDrop, createBeanPile, createSteam } from './models.js?v=10'; // keep ?v= in step with index.html
+import { initShop } from './shop.js?v=10';
+import { initBrew } from './brew.js?v=10';
+import { createSound } from './sound.js?v=10';
 
 const { gsap, ScrollTrigger } = window;
 gsap.registerPlugin(ScrollTrigger);
+
+/* GitHub Pages lets browsers keep the HTML for ~10 minutes, and phones can hold
+   it longer. A phone that kept an old page runs old code, so compare our ?v=
+   with the copy on the server and reload once if the server is newer. */
+(async () => {
+  try {
+    const mine = (document.querySelector('script[src*="site.js"]')?.src.match(/[?&]v=(\d+)/) || [])[1];
+    const html = await (await fetch(location.pathname, { cache: 'no-store' })).text();
+    const live = (html.match(/site\.js\?v=(\d+)/) || [])[1];
+    if (mine && live && Number(live) > Number(mine) && sessionStorage.getItem('zerno-reloaded') !== live) {
+      sessionStorage.setItem('zerno-reloaded', live);
+      location.reload();
+    }
+  } catch { /* offline, private mode without storage: just keep the page */ }
+})();
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];

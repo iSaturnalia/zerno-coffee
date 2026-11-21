@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createCup, createPourOver, createKettle, createGrinder, createBeanPile } from './models.js?v=9';
+import { createCup, createPourOver, createKettle, createGrinder, createBeanPile } from './models.js?v=10';
 
 const { gsap } = window;
 const $ = (s, el = document) => el.querySelector(s);
