@@ -352,9 +352,38 @@ gsap.set('.ch1 .body, .ch2 .stats, .ch2 .title em, .ch3 .drop-script', { opacity
 // autoAlpha (visibility: hidden) — a card with backdrop-filter at opacity 0 still paints a blur strip
 gsap.set('.cards .card', { yPercent: 140, autoAlpha: 0 });
 
-/* smooth, inertial scroll (the wheel only; touch keeps native scrolling) */
-const lenis = !reduceMotion && window.Lenis ? new window.Lenis({ duration: 1.25, wheelMultiplier: 0.9 }) : null;
-if (lenis) {
+/* smooth, inertial scroll for wheel, trackpad and touch */
+// How far the smoothed scroll may run ahead of what is on screen, in viewport
+// heights. This is the speed limit: a long trackpad fling or a hard swipe
+// keeps feeding deltas, but the page never races more than this far ahead,
+// so one gesture can't fly through the whole story.
+const MAX_AHEAD = 0.55;
+let lenis = null;
+if (!reduceMotion && window.Lenis) {
+  lenis = new window.Lenis({
+    lerp: 0.075,               // softer easing than the default 0.1
+    wheelMultiplier: 0.75,
+    syncTouch: true,           // smooth on phones too, not just with a mouse
+    syncTouchLerp: 0.06,
+    touchMultiplier: 1,
+    touchInertiaMultiplier: 22, // a flick coasts, but not across half the site
+    virtualScroll(e) {
+      // let horizontal swipes through to the menu-card strip on phones
+      if (e.event.type.startsWith('touch') && e.event.target.closest?.('.cards') && Math.abs(e.deltaX) > Math.abs(e.deltaY)) return false;
+      if (e.event.type === 'touchend') {
+        // Lenis turns finger speed into the coast distance (velocity × inertia),
+        // ignoring deltaY, so cap the speed itself: a flick coasts ≤ ~1.2 screens
+        const vMax = (innerHeight * 1.2) / lenis.options.touchInertiaMultiplier;
+        lenis.velocity = Math.max(-vMax, Math.min(vMax, lenis.velocity));
+        return true;
+      }
+      const cap = innerHeight * MAX_AHEAD;
+      const ahead = lenis.targetScroll - lenis.animatedScroll;
+      const room = e.deltaY > 0 ? cap - ahead : -cap - ahead;
+      e.deltaY = e.deltaY > 0 ? Math.max(0, Math.min(e.deltaY, room)) : Math.min(0, Math.max(e.deltaY, room));
+      return true;
+    },
+  });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
@@ -362,8 +391,8 @@ if (lenis) {
 
 const master = gsap.timeline({
   defaults: { ease: 'none' },
-  // Lenis already smooths the wheel, so a short scrub is enough
-  scrollTrigger: { trigger: '#story', start: 'top top', end: 'bottom bottom', scrub: reduceMotion ? true : lenis ? 0.5 : 0.9 },
+  // Lenis already smooths the input; a little scrub on top keeps the 3D soft
+  scrollTrigger: { trigger: '#story', start: 'top top', end: 'bottom bottom', scrub: reduceMotion ? true : lenis ? 0.7 : 0.9 },
 });
 
 // 0 · hero out
@@ -512,7 +541,7 @@ renderer.setAnimationLoop(() => {
   renderer.render(scene, camera);
 });
 
-window.__site = { master, scene, camera, update, pointer, steam, grinder };
+window.__site = { master, scene, camera, update, pointer, steam, grinder, lenis };
 
 /* ------------------------------------------------------------------ */
 /* Start: fonts, first frame, intro                                    */
@@ -538,7 +567,10 @@ if (!reduceMotion) {
 /* ------------------------------------------------------------------ */
 /* Menu card renders, made from the same 3D models                     */
 /* ------------------------------------------------------------------ */
-function renderThumbs() {
+// one card per idle slot, so the page never freezes while they render
+const idle = () => new Promise((r) => (window.requestIdleCallback ? requestIdleCallback(r, { timeout: 600 }) : setTimeout(r, 60)));
+
+async function renderThumbs() {
   const size = 320;
   const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
   r.setPixelRatio(1);
@@ -572,6 +604,7 @@ function renderThumbs() {
   const elev = { espresso: 0.75, latte: 0.75, beans: 0.85 };
 
   for (const card of $$('.card')) {
+    await idle();
     const name = card.dataset.thumb;
     const obj = makers[name]();
     s.add(obj);
@@ -590,4 +623,4 @@ function renderThumbs() {
   r.dispose();
   r.forceContextLoss();
 }
-(window.requestIdleCallback || setTimeout)(() => renderThumbs(), { timeout: 1500 });
+setTimeout(renderThumbs, 1200);

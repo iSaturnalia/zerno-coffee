@@ -128,7 +128,8 @@ body.dark-ui .dots button { color: var(--cream); }
 .dots.hide { opacity: 0; pointer-events: none; }
 
 /* ---------------- story ---------------- */
-.story { position: relative; z-index: 4; height: 1300vh; }
+/* scroll length of the whole story: ~340vh per chapter */
+.story { position: relative; z-index: 4; height: 1700vh; }
 .stage { position: sticky; top: 0; height: var(--vh); pointer-events: none; overflow: hidden; }
 .ch { position: absolute; inset: 0; }
 .ch a, .ch button { pointer-events: auto; }
