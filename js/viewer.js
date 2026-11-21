@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createGrinder, createKettle, createPourOver, createCup, createBeanPile, createDrop } from './models.js';
+import { createGrinder, createKettle, createPourOver, createCup, createBeanPile, createDrop } from './models.js?v=3';
 
 /* ---------- renderer & scene ---------- */
 const renderer = new THREE.WebGLRenderer({ antialias: true });
