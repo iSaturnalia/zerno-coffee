@@ -3,7 +3,10 @@
 // its smoothed time `p` drives both the text overlays and the 3D scene.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { M, beanGeometry, createGrinder, createKettle, createPourOver, createCup, createDrop, createBeanPile, createSteam } from './models.js?v=5'; // keep ?v= in step with index.html
+import { M, beanGeometry, createGrinder, createKettle, createPourOver, createCup, createDrop, createBeanPile, createSteam } from './models.js?v=7'; // keep ?v= in step with index.html
+import { initShop } from './shop.js?v=7';
+import { initBrew } from './brew.js?v=7';
+import { createSound } from './sound.js?v=7';
 
 const { gsap, ScrollTrigger } = window;
 gsap.registerPlugin(ScrollTrigger);
@@ -224,6 +227,39 @@ function bgAt(p) {
 }
 const warm = new THREE.Color(0xffe2bf), neutral = new THREE.Color(0xfff4e8);
 
+/* Light follows the visitor's clock: evenings get a low, amber key light with
+   long shadows and deeper backgrounds. ?time=evening|morning|day overrides it. */
+const forced = new URLSearchParams(location.search).get('time');
+const hour = forced === 'evening' ? 20 : forced === 'morning' ? 7 : forced === 'day' ? 13 : new Date().getHours();
+const dusk = hour >= 18 || hour < 5 ? 1 : hour < 9 ? 0.5 : 0; // 1 evening, 0.5 morning, 0 day
+const duskColor = new THREE.Color(0xffb36b);
+document.body.classList.toggle('dusk', dusk === 1);
+{
+  const note = $('#lightNote');
+  if (note) note.textContent = dusk === 1 ? 'свет на сайте сейчас вечерний' : dusk ? 'свет на сайте сейчас утренний' : 'свет на сайте сейчас дневной';
+}
+key.position.set(lerp(4, 6.5, dusk), lerp(7, 3.4, dusk), lerp(5, 3.5, dusk));
+key.intensity = lerp(2.4, 2.1, dusk);
+renderer.toneMappingExposure = lerp(1.05, 0.97, dusk);
+
+// coffee flooding the screen between the pour and the drop
+const flood = $('#flood');
+
+// film grain: a small noise tile, jittered by CSS
+{
+  const c = document.createElement('canvas');
+  c.width = c.height = 140;
+  const g = c.getContext('2d');
+  const img = g.createImageData(140, 140);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = Math.random() * 255;
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+    img.data[i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  $('#grain').style.backgroundImage = `url(${c.toDataURL()})`;
+}
+
 /* ------------------------------------------------------------------ */
 /* Per-frame scene state                                               */
 /* ------------------------------------------------------------------ */
@@ -345,10 +381,28 @@ function update(p, dt) {
 
   /* colour + light */
   const col = bgAt(p);
+  if (dusk) col.offsetHSL(0, 0.03 * dusk, -0.05 * dusk); // a touch deeper in the evening
   document.body.style.backgroundColor = '#' + col.getHexString();
   const warmth = ss(2.0, 2.2, p) * (1 - ss(2.85, 3.0, p)) + ss(4.0, 4.2, p);
-  key.color.copy(neutral).lerp(warm, warmth);
-  sun.style.opacity = (warmth * 0.9).toFixed(3);
+  key.color.copy(neutral).lerp(warm, warmth).lerp(duskColor, dusk * 0.55);
+  sun.style.opacity = (Math.max(warmth, dusk * 0.35) * 0.9).toFixed(3);
+
+  // the flood: rises 2.80–3.02, then thins out as the drop scene shows
+  const rise = ss(2.8, 3.02, p);
+  if (rise > 0 && p < 3.2) {
+    flood.style.visibility = 'visible';
+    flood.style.transform = `translate3d(0, ${(1 - rise) * 115}%, 0)`;
+    flood.style.opacity = String(1 - ss(3.03, 3.16, p));
+  } else {
+    flood.style.visibility = 'hidden';
+  }
+
+  // sound follows the scene
+  sound.update({
+    rattle: pouring && p < 0.8 ? 1 : 0,
+    grind: ss(1.2, 1.4, p) * (1 - ss(1.75, 1.9, p)) * (0.45 + 0.55 * ud.boost),
+    pour: water.visible ? 1 : 0,
+  }, dt);
 
   const live = p > 4.25;
   if (live !== cardsLive) { cardsLive = live; cardsEl.classList.toggle('live', live); }
@@ -480,19 +534,20 @@ document.addEventListener('click', (e) => {
   if (v) { e.preventDefault(); scrollToY($('#visit').offsetTop); }
 });
 
-// little cart on the CTA
-const cta = $('.cta');
-let cart = 0;
-$('#cards').addEventListener('click', (e) => {
-  const b = e.target.closest('.row button');
-  if (!b) return;
-  const on = !b.classList.contains('added');
-  b.classList.toggle('added', on);
-  b.setAttribute('aria-pressed', String(on));
-  cart += on ? 1 : -1;
-  cta.textContent = cart ? `Заказать · ${cart}` : 'Заказать';
-  gsap.fromTo(cta, { scale: 0.92 }, { scale: 1, duration: 0.5, ease: 'elastic.out(1, 0.4)' });
+// cart drawer and product cards (js/shop.js); the 3D scene pauses under them
+let overlayOpen = false;
+initShop({ lenis, onOverlay: (open) => { overlayOpen = open; } });
+initBrew();
+
+// optional sound
+const sound = createSound();
+const soundBtn = $('#sound');
+soundBtn.addEventListener('click', async () => {
+  const on = await sound.toggle();
+  soundBtn.setAttribute('aria-pressed', String(on));
+  soundBtn.setAttribute('aria-label', on ? 'Выключить звук' : 'Включить звук');
 });
+dropSet.userData.onImpact = () => { if (dropSet.visible) sound.plip(); };
 
 /* ------------------------------------------------------------------ */
 /* Cursor and magnetic buttons (mouse only)                            */
@@ -542,10 +597,12 @@ if (finePointer) {
 /* ------------------------------------------------------------------ */
 /* Visit section                                                       */
 /* ------------------------------------------------------------------ */
-gsap.from('.visit .reveal', {
-  y: 36, opacity: 0, duration: 0.9, stagger: 0.08, ease: 'power3.out',
-  scrollTrigger: { trigger: '.visit', start: 'top 70%' },
-});
+for (const sec of ['.brew', '.visit']) {
+  gsap.from(`${sec} .reveal`, {
+    y: 36, opacity: 0, duration: 0.9, stagger: 0.08, ease: 'power3.out',
+    scrollTrigger: { trigger: sec, start: 'top 70%' },
+  });
+}
 gsap.from('#pin', {
   y: -80, opacity: 0, duration: 1.1, ease: 'bounce.out', delay: 0.4,
   scrollTrigger: { trigger: '.map', start: 'top 75%' },
@@ -557,7 +614,7 @@ ScrollTrigger.create({
   onToggle: (self) => { running = self.isActive; },
 });
 ScrollTrigger.create({
-  trigger: '.visit', start: 'top 60%',
+  trigger: '.brew', start: 'top 60%', endTrigger: 'body', end: 'bottom bottom',
   onToggle: (self) => $('#dots').classList.toggle('hide', self.isActive),
 });
 
@@ -574,12 +631,12 @@ addEventListener('resize', () => {
 const timer = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   const dt = Math.min(timer.getDelta(), 0.05);
-  if (!running) return;
+  if (!running || overlayOpen) return;
   update(master.time(), dt);
   renderer.render(scene, camera);
 });
 
-window.__site = { master, scene, camera, update, pointer, steam, grinder, lenis };
+window.__site = { master, scene, camera, update, pointer, steam, grinder, lenis, sound };
 
 /* ------------------------------------------------------------------ */
 /* Start: fonts, first frame, intro                                    */

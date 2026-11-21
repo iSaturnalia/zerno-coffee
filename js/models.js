@@ -602,6 +602,14 @@ export function createCup({ latte = false } = {}) {
   surf.position.y = level;
   surf.receiveShadow = true;
   g.add(surf);
+  // the site paints latte art onto this surface (its texture's canvas)
+  g.userData.surface = surf;
+  g.userData.resetSurface = () => {
+    const fresh = cremaTexture(latte);
+    surf.material.map.image.getContext('2d').drawImage(fresh.image, 0, 0);
+    surf.material.map.needsUpdate = true;
+    fresh.dispose();
+  };
   // handle
   g.add(taperedTube([[0.6, 0.7, 0], [0.86, 0.72, 0], [0.97, 0.55, 0], [0.86, 0.34, 0], [0.55, 0.3, 0]], 0.055, 0.045, M.ceramic, 90, 20));
 
@@ -741,7 +749,10 @@ export function createDrop() {
   const pos = poolGeo.attributes.position;
 
   g.userData.update = (dt) => {
+    const prev = t;
     t = (t + dt) % PERIOD;
+    // the moment the drop meets the surface (used for the "plip" sound)
+    if (dt > 0 && prev < FALL && t >= FALL) g.userData.onImpact?.();
 
     // falling drop, stretched by speed
     if (t < FALL) {

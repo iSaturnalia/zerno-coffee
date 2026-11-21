@@ -6,11 +6,21 @@
 <title>ЗЕРНО — кофейня</title>
 <meta name="description" content="ЗЕРНО — кофейня, где кофе мелют под заказ и заваривают медленно. Меню, зёрна и адрес.">
 <meta name="theme-color" content="#e9e8e6">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ЗЕРНО — кофейня">
+<meta property="og:description" content="Сайт кофейни, где скролл проигрывает путь чашки кофе: 3D на three.js, GSAP и Lenis.">
+<meta property="og:image" content="https://isaturnalia.github.io/zerno-coffee/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://isaturnalia.github.io/zerno-coffee/">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Manrope:wght@400;500;700&family=Unbounded:wght@500;800&display=swap" rel="stylesheet">
 <!-- bump ?v= on every release: GitHub Pages lets browsers cache files for 10 min -->
-<link rel="stylesheet" href="css/site.css?v=5">
+<link rel="stylesheet" href="css/site.css?v=7">
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -35,6 +45,15 @@
 
 <canvas id="gl" aria-hidden="true"></canvas>
 
+<!-- coffee floods the screen on the way into the drop scene -->
+<div class="flood" id="flood" aria-hidden="true">
+  <svg class="flood-wave" viewBox="0 0 1200 100" preserveAspectRatio="none">
+    <path class="w1" d="M0 60 C150 20 300 100 450 60 S750 20 900 60 S1050 100 1200 60 V100 H0Z"/>
+    <path class="w2" d="M0 70 C200 40 350 100 600 70 S950 40 1200 70 V100 H0Z"/>
+  </svg>
+</div>
+<div class="grain" id="grain" aria-hidden="true"></div>
+
 <div class="cursor" id="cursor" aria-hidden="true"><i class="cursor-ring"></i><i class="cursor-dot"></i></div>
 
 <!-- fixed UI -->
@@ -46,7 +65,12 @@
     <a href="#bloom" data-chapter="2">О нас</a>
     <a href="#visit">Контакты</a>
   </nav>
-  <a class="cta" href="#menu" data-chapter="4">Заказать</a>
+  <div class="nav-end">
+    <button class="sound" id="sound" aria-pressed="false" aria-label="Включить звук">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path class="wave" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/><path class="mute" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
+    </button>
+    <a class="cta" href="#menu" data-chapter="4">Заказать</a>
+  </div>
   <button class="burger" id="burger" aria-label="Меню" aria-expanded="false" aria-controls="mnav"><i></i><i></i></button>
 </header>
 
@@ -127,10 +151,46 @@
   </section>
 
   <!-- 5 · visit -->
+  <!-- 5 · brew at home -->
+  <section class="brew" id="brew">
+    <div class="brew-grid">
+      <div class="brew-copy">
+        <div class="label reveal"><span class="n">05</span><i></i><span>Дома</span></div>
+        <h2 class="title reveal">Заварим<br>дома</h2>
+        <p class="body reveal">Рецепт для воронки V60. Выбери, на сколько чашек и какой крепости, — остальное посчитаем.</p>
+        <div class="brew-controls reveal">
+          <div class="seg" role="radiogroup" aria-label="Сколько чашек" id="bCups">
+            <button role="radio" aria-checked="true" data-v="1">1 чашка</button>
+            <button role="radio" aria-checked="false" data-v="2">2</button>
+            <button role="radio" aria-checked="false" data-v="3">3</button>
+            <button role="radio" aria-checked="false" data-v="4">4</button>
+          </div>
+          <div class="seg" role="radiogroup" aria-label="Крепость" id="bStrength">
+            <button role="radio" aria-checked="false" data-v="17">Мягче</button>
+            <button role="radio" aria-checked="true" data-v="16">Баланс</button>
+            <button role="radio" aria-checked="false" data-v="15">Крепче</button>
+          </div>
+        </div>
+      </div>
+      <div class="brew-card reveal">
+        <dl class="brew-figures">
+          <div><dt>Кофе</dt><dd id="bCoffee">16 г</dd></div>
+          <div><dt>Вода</dt><dd id="bWater">250 мл</dd></div>
+          <div><dt>Температура</dt><dd>92°C</dd></div>
+          <div><dt>Время</dt><dd id="bTime">2:30</dd></div>
+        </dl>
+        <div class="brew-vis" aria-hidden="true">
+          <div class="carafe"><div class="carafe-fill" id="bFill"><i></i></div><span class="mark m1"></span><span class="mark m2"></span><span class="mark m3"></span></div>
+        </div>
+        <ol class="brew-steps" id="bSteps"></ol>
+      </div>
+    </div>
+  </section>
+
   <section class="visit" id="visit">
     <div class="visit-grid">
       <div class="visit-copy">
-        <div class="label reveal"><span class="n">05</span><i></i><span>В гости</span></div>
+        <div class="label reveal"><span class="n">06</span><i></i><span>В гости</span></div>
         <h2 class="title reveal">Заходи<br>на чашку</h2>
         <dl class="info">
           <div class="reveal"><dt>Адрес</dt><dd>ул. Примерная, 12</dd></div>
@@ -164,14 +224,48 @@
     </div>
     <footer class="foot">
       <span class="foot-logo">◆ ЗЕРНО</span>
-      <span>© 2026 · демо-проект · сайт сделал Твоё Имя</span>
+      <span>© 2026 · демо-проект · сайт сделал <a href="https://github.com/iSaturnalia">iSaturnalia</a> · <span id="lightNote"></span></span>
     </footer>
   </section>
 </main>
 
+<!-- product card with a live 3D model -->
+<div class="pm" id="pm" hidden>
+  <div class="pm-backdrop" data-close></div>
+  <div class="pm-card" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+    <button class="pm-close" data-close aria-label="Закрыть">×</button>
+    <div class="pm-stage">
+      <canvas id="pmCanvas"></canvas>
+      <p class="pm-hint" id="pmHint"></p>
+      <button class="pm-reset" id="pmReset" hidden>Стереть</button>
+    </div>
+    <div class="pm-info">
+      <p class="pm-meta" id="pmMeta"></p>
+      <h3 id="pmTitle"></h3>
+      <p class="pm-desc" id="pmDesc"></p>
+      <div class="pm-buy"><span class="pm-price" id="pmPrice"></span><button class="btn pm-add" id="pmAdd"><span>В корзину</span></button></div>
+    </div>
+  </div>
+</div>
+
+<!-- cart drawer -->
+<aside class="cart" id="cart" hidden>
+  <div class="cart-backdrop" data-close-cart></div>
+  <div class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <header class="cart-head"><h3 id="cartTitle">Корзина</h3><button class="cart-close" data-close-cart aria-label="Закрыть корзину">×</button></header>
+    <ul class="cart-list" id="cartList"></ul>
+    <p class="cart-empty" id="cartEmpty">Пока пусто — загляни в меню.</p>
+    <footer class="cart-foot">
+      <div class="cart-total"><span>Итого</span><strong id="cartTotal">0 ₽</strong></div>
+      <button class="btn cart-order" id="cartOrder"><span>Оформить заказ</span></button>
+      <p class="cart-note" id="cartNote" hidden>Спасибо! Это демо-сайт: заказ никуда не отправлен.</p>
+    </footer>
+  </div>
+</aside>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-<script type="module" src="js/site.js?v=5"></script>
+<script type="module" src="js/site.js?v=7"></script>
 </body>
 </html>

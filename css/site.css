@@ -30,7 +30,8 @@ body {
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  /* clip, not hidden: hidden turns <body> into a scroll box when <html> is locked, breaking the sticky stage */
+  overflow-x: clip;
 }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
@@ -300,3 +301,196 @@ body.dark-ui .dots button { color: var(--cream); }
   .scroll-cue i { animation: none; }
   .btn::before, .card, .card .ph { transition: none; }
 }
+
+/* =================================================================== */
+/* Sound toggle                                                         */
+/* =================================================================== */
+.nav-end { justify-self: end; display: flex; align-items: center; gap: 10px; }
+.sound {
+  width: 42px; height: 42px; border: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center;
+  background: rgba(255, 255, 255, .55); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 0 1px rgba(20, 18, 16, .08); color: var(--ink); transition: background .3s;
+}
+.sound svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.sound .spk { fill: currentColor; stroke: none; }
+.sound .wave { display: none; }
+.sound[aria-pressed="true"] .wave { display: block; animation: sound-pulse 1.4s ease-in-out infinite; }
+.sound[aria-pressed="true"] .mute { display: none; }
+.sound[aria-pressed="true"] { background: var(--ink); color: #fff; }
+@keyframes sound-pulse { 50% { opacity: .35; } }
+body.dark-ui .sound { background: rgba(26, 15, 9, .5); color: var(--cream); box-shadow: 0 0 0 1px rgba(243, 236, 227, .14); }
+
+/* =================================================================== */
+/* Flood transition + film grain                                        */
+/* =================================================================== */
+.flood {
+  position: fixed; inset: 0; z-index: 3; pointer-events: none; visibility: hidden;
+  background: linear-gradient(180deg, #3a2213 0%, #1a0f09 30%, #120a06 100%);
+  transform: translate3d(0, 115%, 0); will-change: transform;
+}
+.flood-wave { position: absolute; left: 0; bottom: calc(100% - 2px); width: 200%; height: 90px; animation: flood-slide 3.2s linear infinite; }
+.flood-wave .w1 { fill: #3a2213; }
+.flood-wave .w2 { fill: #4b2c17; opacity: .55; transform: translateX(-12%); }
+@keyframes flood-slide { to { transform: translateX(-50%); } }
+
+.grain {
+  position: fixed; inset: -50%; z-index: 45; pointer-events: none;
+  opacity: .065; mix-blend-mode: overlay;
+  animation: grain 0.9s steps(6) infinite;
+}
+@keyframes grain {
+  0% { transform: translate(0, 0); } 20% { transform: translate(-3%, 2%); } 40% { transform: translate(2%, -4%); }
+  60% { transform: translate(-4%, -1%); } 80% { transform: translate(3%, 3%); } 100% { transform: translate(0, 0); }
+}
+
+/* evening light: warmer, lower sun through the leaves */
+body.dusk .sun {
+  background:
+    radial-gradient(50% 60% at 82% 30%, rgba(255, 196, 128, .85), transparent 70%),
+    repeating-linear-gradient(104deg, rgba(110, 58, 20, .16) 0 3vw, transparent 3vw 7vw, rgba(110, 58, 20, .1) 7vw 8vw, transparent 8vw 13vw);
+}
+
+/* =================================================================== */
+/* Cart                                                                 */
+/* =================================================================== */
+/* lock only the root: overflow on <body> would make it a scroll box and break the sticky stage */
+html.is-locked { overflow: hidden; }
+
+.cart { position: fixed; inset: 0; z-index: 70; }
+.cart-backdrop { position: absolute; inset: 0; background: rgba(20, 14, 10, .45); opacity: 0; transition: opacity .38s; }
+.cart-panel {
+  position: absolute; top: 0; right: 0; bottom: 0; width: min(420px, 100%);
+  display: flex; flex-direction: column; background: var(--cream); color: var(--ink);
+  box-shadow: -30px 0 60px -30px rgba(20, 14, 10, .5);
+  transform: translateX(100%); transition: transform .38s cubic-bezier(.2, .8, .2, 1);
+}
+.cart.open .cart-backdrop { opacity: 1; }
+.cart.open .cart-panel { transform: none; }
+.cart-head { display: flex; justify-content: space-between; align-items: center; padding: 22px 24px; border-bottom: 1px solid rgba(20, 18, 16, .1); }
+.cart-head h3, .pm-info h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 24px; }
+.cart-close, .pm-close {
+  width: 42px; height: 42px; border: 0; border-radius: 50%; cursor: pointer; font-size: 26px; line-height: 1;
+  background: rgba(20, 18, 16, .06); color: var(--ink); transition: background .25s;
+}
+.cart-close:hover, .pm-close:hover { background: rgba(20, 18, 16, .12); }
+.cart-list { flex: 1; overflow-y: auto; padding: 8px 24px; overscroll-behavior: contain; }
+.cart-item { display: grid; grid-template-columns: 56px 1fr auto; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(20, 18, 16, .08); }
+.cart-thumb { width: 56px; height: 56px; border-radius: 12px; background: #efe7dc center / cover no-repeat; }
+.cart-name { font-weight: 700; font-size: 14px; line-height: 1.3; }
+.cart-name small { display: block; font-weight: 500; color: var(--ink-soft); margin-top: 2px; }
+.qty { display: flex; align-items: center; gap: 4px; background: #fff; border-radius: 99px; padding: 4px; }
+.qty button { width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; cursor: pointer; font-size: 18px; color: var(--ink); }
+.qty button:hover { background: rgba(20, 18, 16, .07); }
+.qty output { min-width: 18px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cart-empty { padding: 28px 24px; color: var(--ink-soft); }
+.cart-foot { padding: 20px 24px 24px; border-top: 1px solid rgba(20, 18, 16, .1); display: grid; gap: 14px; }
+.cart-total { display: flex; justify-content: space-between; align-items: baseline; }
+.cart-total strong { font-family: var(--f-display); font-weight: 800; font-size: 26px; }
+.cart-order { justify-content: center; }
+.cart-order:disabled { opacity: .45; cursor: not-allowed; }
+.cart-order:disabled::before { display: none; }
+.cart-note { font-size: 14px; color: var(--ink-soft); }
+.fly-bean {
+  position: fixed; left: 0; top: 0; z-index: 80; pointer-events: none;
+  width: 16px; height: 22px; margin: -11px 0 0 -8px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #7a4a2a, #3a1f10 70%);
+  box-shadow: inset -2px 0 0 #2a160b;
+}
+
+/* =================================================================== */
+/* Product card                                                         */
+/* =================================================================== */
+.card { cursor: pointer; }
+.card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.pm { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 24px; }
+.pm-backdrop { position: absolute; inset: 0; background: rgba(20, 14, 10, .5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); opacity: 0; transition: opacity .38s; }
+.pm-card {
+  position: relative; width: min(980px, 100%); max-height: calc(100svh - 48px);
+  display: grid; grid-template-columns: 1.25fr 1fr; overflow: hidden;
+  background: var(--cream); color: var(--ink); border-radius: 28px;
+  box-shadow: 0 40px 80px -30px rgba(20, 14, 10, .6);
+  opacity: 0; transform: translateY(24px) scale(.97); transition: opacity .38s, transform .45s cubic-bezier(.2, .8, .2, 1);
+}
+.pm.open .pm-backdrop { opacity: 1; }
+.pm.open .pm-card { opacity: 1; transform: none; }
+.pm-close { position: absolute; top: 14px; right: 14px; z-index: 2; background: rgba(255, 255, 255, .7); }
+.pm-stage { position: relative; background: #efe7dc; min-height: 420px; }
+.pm-stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+.pm-stage canvas:active { cursor: grabbing; }
+.pm-hint {
+  position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); white-space: nowrap;
+  font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 99px;
+  background: rgba(255, 255, 255, .78); color: var(--ink); pointer-events: none; transition: opacity .5s;
+}
+.pm-hint.done { opacity: 0; }
+.pm-reset {
+  position: absolute; left: 16px; top: 16px; border: 0; border-radius: 99px; padding: 9px 16px; cursor: pointer;
+  font: 700 13px var(--f-body); background: rgba(255, 255, 255, .78); color: var(--ink);
+}
+.pm-info { display: flex; flex-direction: column; justify-content: center; gap: 14px; padding: 48px 40px; }
+.pm-info h3 { font-size: clamp(26px, 3vw, 38px); line-height: 1; }
+.pm-meta { font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-soft); }
+.pm-desc { color: var(--ink-soft); }
+.pm-buy { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 12px; }
+.pm-price { font-family: var(--f-display); font-weight: 800; font-size: 28px; }
+
+/* =================================================================== */
+/* Brew at home                                                         */
+/* =================================================================== */
+.brew { position: relative; z-index: 10; background: #ebe1d3; color: var(--ink); }
+.brew-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(32px, 5vw, 80px); align-items: center; padding: 16vh var(--gutter) 12vh; }
+.brew-copy { display: grid; gap: 24px; justify-items: start; }
+.brew .title { font-size: clamp(38px, 5.4vw, 96px); }
+.brew .body { max-width: 420px; color: var(--ink-soft); }
+.brew-controls { display: grid; gap: 12px; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 5px; border-radius: 99px; background: rgba(255, 255, 255, .6); box-shadow: 0 0 0 1px rgba(20, 18, 16, .07); }
+.seg button { border: 0; border-radius: 99px; padding: 10px 18px; font: 700 14px var(--f-body); background: transparent; color: var(--ink); cursor: pointer; transition: background .25s, color .25s; }
+.seg button:hover { background: rgba(20, 18, 16, .06); }
+.seg button[aria-checked="true"] { background: var(--ink); color: #fff; }
+.brew-card {
+  display: grid; grid-template-columns: 1fr 120px; gap: 24px 28px; align-items: center;
+  padding: clamp(24px, 3vw, 40px); border-radius: 28px; background: var(--cream);
+  box-shadow: 0 30px 60px -34px rgba(60, 35, 15, .45);
+}
+.brew-figures { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; }
+.brew-figures dt { font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-soft); }
+.brew-figures dd { font-family: var(--f-display); font-weight: 800; font-size: clamp(24px, 2.4vw, 36px); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.brew-vis { display: grid; place-items: center; grid-row: span 2; }
+.carafe {
+  position: relative; width: 96px; height: 170px; overflow: hidden;
+  border: 2px solid rgba(20, 18, 16, .18); border-top: 0; border-radius: 10px 10px 40px 40px;
+  background: rgba(255, 255, 255, .5);
+}
+.carafe-fill { position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: linear-gradient(180deg, #5a3218, #1e0f07); }
+.carafe-fill i {
+  position: absolute; left: -50%; top: -8px; width: 200%; height: 14px; border-radius: 40%;
+  background: #6b3d1e; animation: carafe-wave 2.4s linear infinite;
+}
+@keyframes carafe-wave { to { transform: translateX(25%); } }
+.carafe .mark { position: absolute; right: 0; width: 14px; height: 2px; background: rgba(20, 18, 16, .2); }
+.carafe .m1 { bottom: 27.5%; } .carafe .m2 { bottom: 49%; } .carafe .m3 { bottom: 70.5%; }
+.brew-steps { grid-column: 1; display: grid; gap: 8px; padding-left: 20px; font-size: 14px; color: var(--ink-soft); }
+.brew-steps b { color: var(--ink); }
+.foot a { color: inherit; text-underline-offset: 3px; }
+
+@media (max-width: 760px) {
+  .nav { grid-template-columns: 1fr auto auto; }
+  .sound { width: 44px; height: 44px; }
+  .pm { padding: 0; place-items: end stretch; }
+  .pm-card { grid-template-columns: 1fr; width: 100%; max-height: 92svh; border-radius: 28px 28px 0 0; overflow-y: auto; transform: translateY(40px); }
+  .pm-stage { min-height: 0; height: 46svh; }
+  .pm-info { padding: 24px 20px 28px; gap: 10px; }
+  .pm-buy { margin-top: 4px; }
+  .brew-grid { grid-template-columns: 1fr; padding: 12vh 16px 8vh; }
+  .brew-card { grid-template-columns: 1fr 84px; gap: 18px; padding: 22px 18px; }
+  .carafe { width: 72px; height: 130px; }
+  .brew-steps { grid-column: 1 / -1; }
+  .seg button { padding: 10px 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain, .flood-wave, .carafe-fill i, .sound[aria-pressed="true"] .wave { animation: none; }
+  .cart-panel, .pm-card, .cart-backdrop, .pm-backdrop { transition: none; }
+}
+.brew-figures dd { white-space: nowrap; }
+@media (max-width: 760px) { .brew-figures dd { font-size: 22px; } }
