@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Manrope:wght@400;500;700&family=Unbounded:wght@500;800&display=swap" rel="stylesheet">
 <!-- bump ?v= on every release: GitHub Pages lets browsers cache files for 10 min -->
-<link rel="stylesheet" href="css/site.css?v=3">
+<link rel="stylesheet" href="css/site.css?v=4">
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -47,7 +47,16 @@
     <a href="#visit">Контакты</a>
   </nav>
   <a class="cta" href="#menu" data-chapter="4">Заказать</a>
+  <button class="burger" id="burger" aria-label="Меню" aria-expanded="false" aria-controls="mnav"><i></i><i></i></button>
 </header>
+
+<!-- phone menu -->
+<nav class="mnav" id="mnav" aria-label="Разделы" hidden>
+  <a href="#menu" data-chapter="4">Меню</a>
+  <a href="#grind" data-chapter="1">Зёрна</a>
+  <a href="#bloom" data-chapter="2">О нас</a>
+  <a href="#visit">Контакты</a>
+</nav>
 
 <nav class="dots" id="dots" aria-label="Сцены">
   <button data-chapter="0" aria-label="Закажи кофе"></button>
@@ -162,6 +171,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-<script type="module" src="js/site.js?v=3"></script>
+<script type="module" src="js/site.js?v=4"></script>
 </body>
 </html>

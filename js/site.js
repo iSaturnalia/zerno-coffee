@@ -3,7 +3,7 @@
 // its smoothed time `p` drives both the text overlays and the 3D scene.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { M, beanGeometry, createGrinder, createKettle, createPourOver, createCup, createDrop, createBeanPile, createSteam } from './models.js?v=3'; // keep ?v= in step with index.html
+import { M, beanGeometry, createGrinder, createKettle, createPourOver, createCup, createDrop, createBeanPile, createSteam } from './models.js?v=4'; // keep ?v= in step with index.html
 
 const { gsap, ScrollTrigger } = window;
 gsap.registerPlugin(ScrollTrigger);
@@ -56,7 +56,7 @@ scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d2ca, 0.35));
 const key = new THREE.DirectionalLight(0xfff4e8, 2.4);
 key.position.set(4, 7, 5);
 key.castShadow = true;
-key.shadow.mapSize.set(2048, 2048);
+key.shadow.mapSize.setScalar(isMobile() ? 1024 : 2048); // phones: a quarter of the shadow work
 Object.assign(key.shadow.camera, { left: -5, right: 5, top: 7, bottom: -3, near: 0.5, far: 30 });
 key.shadow.bias = -0.0004;
 key.shadow.normalBias = 0.02;
@@ -164,6 +164,18 @@ const KEYS = [
 ];
 const _pos = new THREE.Vector3(), _tgt = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
 
+// Portrait screens. [p, value] pairs, eased between neighbours.
+// Width each scene needs, relative to the screen height:
+const PORTRAIT_WIDTH = [[0, 0.72], [1.0, 0.72], [1.3, 1.12], [1.85, 1.12], [2.15, 1.05], [2.85, 1.05], [3.1, 0.5], [3.9, 0.5], [4.15, 0.95], [5, 0.95]];
+// Vertical shift of the picture (negative = lower, under the heading):
+const PORTRAIT_SHIFT = [[0, -0.06], [1.0, -0.06], [1.3, -0.15], [1.85, -0.15], [2.15, -0.15], [2.85, -0.15], [3.1, -0.02], [3.9, -0.02], [4.15, 0.08], [5, 0.08]];
+function portraitCurve(keys, p) {
+  let i = 0;
+  while (i < keys.length - 2 && p > keys[i + 1][0]) i++;
+  const [p0, v0] = keys[i], [p1, v1] = keys[i + 1];
+  return lerp(v0, v1, ss(p0, p1, p));
+}
+
 function placeCamera(p) {
   let i = 0;
   while (i < KEYS.length - 2 && p > KEYS[i + 1].p) i++;
@@ -176,15 +188,15 @@ function placeCamera(p) {
 
   const aspect = innerWidth / innerHeight;
   if (aspect < 1) {
-    // portrait: back off so wide scenes fit, center horizontally, sit lower under the text
-    const wide = ss(1.0, 1.25, p) * (1 - ss(2.85, 3.1, p)); // exploded grinder and kettle scenes
-    const zoom = THREE.MathUtils.clamp((1.1 + 0.45 * wide) / aspect, 1, 2.6);
+    // Portrait: each scene needs a different width on screen, so back the
+    // camera off just enough for that scene, centre it, and drop it under the text.
+    const need = portraitCurve(PORTRAIT_WIDTH, p);
+    const zoom = THREE.MathUtils.clamp(need / aspect, 1, 2.7);
     _tgt.x += 0.25 * ss(1.95, 2.2, p) * (1 - ss(2.85, 3.1, p)); // kettle + dripper as one group
     _pos.x = lerp(_pos.x, _tgt.x, 0.6);
     _pos.sub(_tgt).multiplyScalar(zoom).add(_tgt);
     sx = 0;
-    sy = sy > 0 ? sy * 0.6 : -0.1 - 0.08 * ss(1.95, 2.2, p) * (1 - ss(2.85, 3.1, p));
-    if (p > 2.95 && p < 4) sy = -0.04;
+    sy = portraitCurve(PORTRAIT_SHIFT, p);
   }
   // gentle parallax: the camera drifts a little after the mouse
   const d = _pos.distanceTo(_tgt);
@@ -435,7 +447,18 @@ function scrollToY(top) {
   if (lenis) lenis.scrollTo(top, { duration: 2.2, easing: (t) => 1 - Math.pow(1 - t, 4) });
   else window.scrollTo({ top, behavior: reduceMotion ? 'auto' : 'smooth' });
 }
+// phone menu
+const burger = $('#burger'), mnav = $('#mnav');
+function setMenu(open) {
+  burger.setAttribute('aria-expanded', String(open));
+  mnav.hidden = !open;
+}
+burger.addEventListener('click', () => setMenu(mnav.hidden));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+
 document.addEventListener('click', (e) => {
+  if (!mnav.hidden && !e.target.closest('#mnav, #burger')) setMenu(false);
+  if (e.target.closest('#mnav a')) setMenu(false);
   const a = e.target.closest('[data-chapter]');
   if (a) { e.preventDefault(); scrollToChapter(+a.dataset.chapter); return; }
   const v = e.target.closest('a[href="#visit"]');
