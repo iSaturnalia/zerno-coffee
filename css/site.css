@@ -38,6 +38,9 @@ button { font: inherit; color: inherit; }
 ul { list-style: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+/* `hidden` must win over component display rules (.pm is display: grid):
+   otherwise a closed, invisible overlay sits on top and swallows every click */
+[hidden] { display: none !important; }
 
 /* Lenis smooth scroll */
 html.lenis, html.lenis body { height: auto; }
@@ -494,3 +497,20 @@ html.is-locked { overflow: hidden; }
 }
 .brew-figures dd { white-space: nowrap; }
 @media (max-width: 760px) { .brew-figures dd { font-size: 22px; } }
+
+/* phone header: name, order button and menu on one line, same height */
+.mnav-sound { display: none; }
+@media (max-width: 760px) {
+  .nav { grid-template-columns: 1fr auto auto; align-items: center; }
+  .nav .sound { display: none; }
+  .nav-end { gap: 0; }
+  .cta { display: inline-flex; align-items: center; height: 44px; padding: 0 20px; white-space: nowrap; line-height: 1; }
+  .logo { display: inline-flex; align-items: center; height: 44px; line-height: 1; }
+  .mnav-sound {
+    display: flex; justify-content: space-between; align-items: center;
+    font: 800 22px var(--f-display); text-transform: uppercase; text-align: left;
+    color: var(--ink); background: none; border: 0; padding: 14px 16px; border-radius: 14px; cursor: pointer;
+  }
+  .mnav-sound span { font: 700 13px var(--f-body); text-transform: none; padding: 6px 12px; border-radius: 99px; background: rgba(20, 18, 16, .08); }
+  .mnav-sound[aria-pressed="true"] span { background: var(--ink); color: #fff; }
+}

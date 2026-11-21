@@ -3,10 +3,10 @@
 // its smoothed time `p` drives both the text overlays and the 3D scene.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { M, beanGeometry, createGrinder, createKettle, createPourOver, createCup, createDrop, createBeanPile, createSteam } from './models.js?v=7'; // keep ?v= in step with index.html
-import { initShop } from './shop.js?v=7';
-import { initBrew } from './brew.js?v=7';
-import { createSound } from './sound.js?v=7';
+import { M, beanGeometry, createGrinder, createKettle, createPourOver, createCup, createDrop, createBeanPile, createSteam } from './models.js?v=9'; // keep ?v= in step with index.html
+import { initShop } from './shop.js?v=9';
+import { initBrew } from './brew.js?v=9';
+import { createSound } from './sound.js?v=9';
 
 const { gsap, ScrollTrigger } = window;
 gsap.registerPlugin(ScrollTrigger);
@@ -541,12 +541,17 @@ initBrew();
 
 // optional sound
 const sound = createSound();
-const soundBtn = $('#sound');
-soundBtn.addEventListener('click', async () => {
-  const on = await sound.toggle();
-  soundBtn.setAttribute('aria-pressed', String(on));
-  soundBtn.setAttribute('aria-label', on ? 'Выключить звук' : 'Включить звук');
-});
+// header button on desktop, a row in the burger menu on phones
+const soundBtn = $('#sound'), soundRow = $('#soundM');
+for (const btn of [soundBtn, soundRow]) {
+  btn.addEventListener('click', async () => {
+    const on = await sound.toggle();
+    soundBtn.setAttribute('aria-pressed', String(on));
+    soundBtn.setAttribute('aria-label', on ? 'Выключить звук' : 'Включить звук');
+    soundRow.setAttribute('aria-pressed', String(on));
+    soundRow.querySelector('span').textContent = on ? 'вкл' : 'выкл';
+  });
+}
 dropSet.userData.onImpact = () => { if (dropSet.visible) sound.plip(); };
 
 /* ------------------------------------------------------------------ */
