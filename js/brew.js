@@ -1,4 +1,6 @@
 // "Brew at home": a V60 recipe that scales with cups and strength.
+import { T } from './i18n.js?v=13';
+
 const { gsap } = window;
 const $ = (s) => document.querySelector(s);
 
@@ -24,7 +26,7 @@ export function initBrew() {
     return {
       cups, coffee, water, time,
       bloom: coffee * 2,
-      grind: cups >= 3 ? 'средне-крупный' : 'средний',
+      grind: T.brew.grind(cups),
     };
   }
 
@@ -34,19 +36,14 @@ export function initBrew() {
     gsap.to(shown, {
       coffee: r.coffee, water: r.water, time: r.time, duration: 0.6, ease: 'power2.out',
       onUpdate: () => {
-        out.coffee.textContent = `${Math.round(shown.coffee)} г`;
-        out.water.textContent = `${Math.round(shown.water)} мл`;
+        out.coffee.textContent = `${Math.round(shown.coffee)} ${T.g}`;
+        out.water.textContent = `${Math.round(shown.water)} ${T.ml}`;
         out.time.textContent = fmt(shown.time);
       },
     });
     // the carafe fills to the new level (4 cups = full)
     gsap.to(fill, { height: `${(r.water / (4 * CUP_ML)) * 86 + 6}%`, duration: 1.1, ease: 'power2.inOut' });
-    steps.innerHTML = `
-      <li>Промой бумажный фильтр горячей водой и слей её.</li>
-      <li>Засыпь <b>${r.coffee} г</b> кофе, помол ${r.grind}.</li>
-      <li>Цветение: <b>${r.bloom} мл</b> воды 92°C, подожди 45 секунд.</li>
-      <li>Доливай кругами до <b>${r.water} мл</b> к ${fmt(r.time - 45)}.</li>
-      <li>Дай стечь — готово к <b>${fmt(r.time)}</b>.</li>`;
+    steps.innerHTML = T.brew.steps(r, fmt);
   }
 
   // radio-group behaviour: click, and arrow keys move the selection

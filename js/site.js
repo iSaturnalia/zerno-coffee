@@ -3,10 +3,11 @@
 // its smoothed time `p` drives both the text overlays and the 3D scene.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { M, beanGeometry, createGrinder, createKettle, createPourOver, createCup, createDrop, createBeanPile, createSteam } from './models.js?v=10'; // keep ?v= in step with index.html
-import { initShop } from './shop.js?v=10';
-import { initBrew } from './brew.js?v=10';
-import { createSound } from './sound.js?v=10';
+import { M, beanGeometry, createGrinder, createKettle, createPourOver, createCup, createDrop, createBeanPile, createSteam } from './models.js?v=13'; // keep ?v= in step with index.html
+import { initShop } from './shop.js?v=13';
+import { initBrew } from './brew.js?v=13';
+import { createSound } from './sound.js?v=13';
+import { T } from './i18n.js?v=13';
 
 const { gsap, ScrollTrigger } = window;
 gsap.registerPlugin(ScrollTrigger);
@@ -251,7 +252,7 @@ const duskColor = new THREE.Color(0xffb36b);
 document.body.classList.toggle('dusk', dusk === 1);
 {
   const note = $('#lightNote');
-  if (note) note.textContent = dusk === 1 ? 'свет на сайте сейчас вечерний' : dusk ? 'свет на сайте сейчас утренний' : 'свет на сайте сейчас дневной';
+  if (note) note.textContent = dusk === 1 ? T.light.evening : dusk ? T.light.morning : T.light.day;
 }
 key.position.set(lerp(4, 6.5, dusk), lerp(7, 3.4, dusk), lerp(5, 3.5, dusk));
 key.intensity = lerp(2.4, 2.1, dusk);
@@ -369,7 +370,7 @@ function update(p, dt) {
   // brew numbers count up with the pour
   const k = ss(2.25, 2.78, p);
   const secs = Math.round(210 * k);
-  const stats = `${Math.round(20 + 72 * k)}°C|${Math.round(18 * k)} г|${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+  const stats = `${Math.round(20 + 72 * k)}°C|${Math.round(18 * k)} ${T.g}|${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
   if (stats !== lastStats) {
     lastStats = stats;
     const [a, b, c] = stats.split('|');
@@ -562,9 +563,9 @@ for (const btn of [soundBtn, soundRow]) {
   btn.addEventListener('click', async () => {
     const on = await sound.toggle();
     soundBtn.setAttribute('aria-pressed', String(on));
-    soundBtn.setAttribute('aria-label', on ? 'Выключить звук' : 'Включить звук');
+    soundBtn.setAttribute('aria-label', on ? T.sound.on : T.sound.off);
     soundRow.setAttribute('aria-pressed', String(on));
-    soundRow.querySelector('span').textContent = on ? 'вкл' : 'выкл';
+    soundRow.querySelector('span').textContent = on ? T.sound.rowOn : T.sound.rowOff;
   });
 }
 dropSet.userData.onImpact = () => { if (dropSet.visible) sound.plip(); };

@@ -1,6 +1,6 @@
 # ЗЕРНО — сайт кофейни с 3D по скроллу
 
-**Демо:** https://isaturnalia.github.io/zerno-coffee/ · [3D-модели](https://isaturnalia.github.io/zerno-coffee/models.html) · [макет](https://isaturnalia.github.io/zerno-coffee/mockup.html)
+**Демо:** https://isaturnalia.github.io/zerno-coffee/ · [English version](https://isaturnalia.github.io/zerno-coffee/en/) · [3D-модели](https://isaturnalia.github.io/zerno-coffee/models.html) · [макет](https://isaturnalia.github.io/zerno-coffee/mockup.html)
 
 ![Прокрутка сайта: зёрна, помол, заливка, капля, меню](docs/demo.gif)
 
@@ -29,6 +29,10 @@
 - **Переход «кофе заливает экран»** перед сценой с каплей.
 - **Зерно плёнки** поверх всего сайта.
 - **Свет по времени суток.** Вечером солнце ниже и теплее, тени длиннее. Посмотреть режимы можно параметром `?time=evening`, `?time=morning` или `?time=day`.
+
+## Две языковые версии
+
+Русская версия лежит в корне, английская — в `en/`. В шапке переключатель RU / EN (на телефоне — строка в меню). Разметка у версий своя, а код общий: тексты, которые подставляют скрипты (корзина, рецепт, подсказки, цены), собраны в `js/i18n.js` и выбираются по `<html lang>`. В английской версии цены в долларах.
 
 ## Детали
 
@@ -65,6 +69,8 @@ index.html        сайт
 css/site.css      стили
 js/site.js        сцены, камера, анимации, курсор
 js/models.js      процедурные 3D-модели, материалы и шейдер пара
+en/index.html     английская версия сайта
+js/i18n.js        тексты для скриптов на двух языках
 js/shop.js        корзина, 3D-карточка товара, латте-арт
 js/brew.js        калькулятор заваривания
 js/sound.js       звук на Web Audio

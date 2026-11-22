@@ -177,7 +177,8 @@ body.dark-ui .dots button { color: var(--cream); }
   font-family: var(--f-display); font-weight: 800; text-transform: uppercase;
   font-size: clamp(38px, 6.2vw, 112px); line-height: .94; letter-spacing: -.01em;
 }
-.title .ln { display: block; overflow: hidden; padding: .06em 0 .12em; margin: -.06em 0 -.12em; }
+/* extra room on the right: handwritten letters overhang their box and overflow:hidden would clip them */
+.title .ln { display: block; overflow: hidden; padding: .06em .22em .12em 0; margin: -.06em -.22em -.12em 0; }
 .title { position: relative; }
 .title .ln > span { display: inline-block; }
 .script { font-family: var(--f-script); font-weight: 600; font-style: normal; color: var(--accent); text-transform: none; letter-spacing: 0; }
@@ -514,3 +515,20 @@ html.is-locked { overflow: hidden; }
   .mnav-sound span { font: 700 13px var(--f-body); text-transform: none; padding: 6px 12px; border-radius: 99px; background: rgba(20, 18, 16, .08); }
   .mnav-sound[aria-pressed="true"] span { background: var(--ink); color: #fff; }
 }
+
+/* language switch */
+.lang {
+  display: grid; place-items: center; height: 42px; min-width: 42px; padding: 0 12px; border-radius: 99px;
+  font: 700 12px var(--f-body); letter-spacing: .1em; text-decoration: none; color: var(--ink);
+  background: rgba(255, 255, 255, .55); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 0 1px rgba(20, 18, 16, .08); transition: background .3s, color .3s;
+}
+.lang:hover { background: var(--ink); color: #fff; }
+body.dark-ui .lang { background: rgba(26, 15, 9, .5); color: var(--cream); box-shadow: 0 0 0 1px rgba(243, 236, 227, .14); }
+.mnav-lang { display: none; }
+@media (max-width: 760px) {
+  .nav .lang { display: none; }
+  .mnav .mnav-lang { display: block; }
+}
+/* English copy is shorter: keep the handwritten word close to "pour" */
+html[lang="en"] .ch2 .title em { left: 4.9em; right: auto; bottom: -.55em; }

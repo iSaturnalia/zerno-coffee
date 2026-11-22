@@ -2,21 +2,14 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createCup, createPourOver, createKettle, createGrinder, createBeanPile } from './models.js?v=10';
+import { createCup, createPourOver, createKettle, createGrinder, createBeanPile } from './models.js?v=13';
+import { T } from './i18n.js?v=13';
 
 const { gsap } = window;
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
-const rub = (n) => `${n.toLocaleString('ru-RU')} ₽`;
-
-const INFO = {
-  espresso: { meta: '30 мл · двойной шот', desc: 'Зерно «Эфиопия»: ягодная кислинка и шоколадное послевкусие. Мелем за минуту до приготовления.' },
-  pourover: { meta: '250 мл · 3:30', desc: 'Фильтр через воронку V60. Медленная заливка раскрывает чайные и цветочные ноты.' },
-  latte: { meta: '250 мл · молоко 3,2%', desc: 'Эспрессо и бархатное молоко. Нарисуй узор на пенке — пальцем или мышкой.', art: true },
-  beans: { meta: '250 г · обжарка раз в неделю', desc: 'Мытая обработка, высота 1900 м. Подходит и для фильтра, и для эспрессо.' },
-  kettle: { meta: '0,9 л · сталь', desc: 'Тонкий носик для точной заливки и термометр на крышке.' },
-  grinder: { meta: '40 ступеней помола', desc: 'Стальные жернова и стеклянный бункер на 250 г. Та самая, что на первом экране.' },
-};
+const rub = T.money;
+const INFO = T.info;
 
 /** Everything the shop needs to know about a card. */
 function readProducts() {
@@ -27,7 +20,7 @@ function readProducts() {
       id,
       card,
       name: $('h3', card).textContent.trim(),
-      price: Number($('.row span', card).textContent.replace(/\D/g, '')),
+      price: Number(card.dataset.price),
       ...INFO[id],
     });
   }
@@ -73,9 +66,9 @@ export function initShop({ lenis, onOverlay }) {
         <span class="cart-thumb" style="background-image:${$('.ph', p.card).style.backgroundImage || 'none'}"></span>
         <span class="cart-name">${p.name}<small>${rub(p.price)}</small></span>
         <span class="qty">
-          <button data-dec="${id}" aria-label="Убрать одну: ${p.name}">−</button>
+          <button data-dec="${id}" aria-label="${T.cart.removeOne(p.name)}">−</button>
           <output aria-live="polite">${qty}</output>
-          <button data-inc="${id}" aria-label="Добавить ещё: ${p.name}">+</button>
+          <button data-inc="${id}" aria-label="${T.cart.addOne(p.name)}">+</button>
         </span>`;
       list.append(li);
     }
@@ -83,8 +76,8 @@ export function initShop({ lenis, onOverlay }) {
     empty.hidden = cart.size > 0;
     orderBtn.disabled = cart.size === 0;
     const n = count();
-    cta.textContent = n ? `Корзина · ${n}` : 'Заказать';
-    cta.setAttribute('aria-label', n ? `Открыть корзину, товаров: ${n}` : 'Заказать');
+    cta.textContent = n ? T.cart.withItems(n) : T.cart.order;
+    cta.setAttribute('aria-label', n ? T.cart.openAria(n) : T.cart.order);
     // mark the "+" on cards that are in the cart
     for (const p of products.values()) $('.row button', p.card).classList.toggle('added', cart.has(p.id));
   }
@@ -295,8 +288,8 @@ export function initShop({ lenis, onOverlay }) {
     $('#pmPrice').textContent = rub(p.price);
     const touch = matchMedia('(pointer: coarse)').matches;
     hint.textContent = p.art
-      ? (touch ? 'Рисуй пальцем по пенке' : 'Рисуй по пенке: зажми и веди')
-      : (touch ? 'Крути модель пальцем' : 'Крути модель: зажми и тяни');
+      ? (touch ? T.hint.artTouch : T.hint.artMouse)
+      : (touch ? T.hint.spinTouch : T.hint.spinMouse);
     hint.classList.remove('done');
     resetBtn.hidden = !p.art;
     modal.hidden = false;
@@ -342,8 +335,8 @@ export function initShop({ lenis, onOverlay }) {
     const { card } = p;
     card.tabIndex = 0;
     card.setAttribute('role', 'button');
-    card.setAttribute('aria-label', `${p.name}, ${rub(p.price)}. Подробнее`);
-    $('.row button', card).setAttribute('aria-label', `В корзину: ${p.name}`);
+    card.setAttribute('aria-label', T.cart.cardAria(p.name, rub(p.price)));
+    $('.row button', card).setAttribute('aria-label', T.cart.plusAria(p.name));
     card.addEventListener('click', (e) => {
       const plus = e.target.closest('.row button');
       if (plus) { e.stopPropagation(); add(p.id, plus); return; }

@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZERNO — coffee shop</title>
+<meta name="description" content="ZERNO is a coffee shop that grinds to order and pours slow. A scroll-driven 3D story built with three.js, GSAP and Lenis.">
+<meta name="theme-color" content="#e9e8e6">
+<link rel="icon" href="../icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<link rel="alternate" hreflang="ru" href="https://isaturnalia.github.io/zerno-coffee/">
+<link rel="alternate" hreflang="en" href="https://isaturnalia.github.io/zerno-coffee/en/">
+<link rel="alternate" hreflang="x-default" href="https://isaturnalia.github.io/zerno-coffee/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="ZERNO — coffee shop">
+<meta property="og:description" content="A coffee shop site where scrolling plays the journey of a cup of coffee: 3D with three.js, GSAP and Lenis.">
+<meta property="og:image" content="https://isaturnalia.github.io/zerno-coffee/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://isaturnalia.github.io/zerno-coffee/en/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Manrope:wght@400;500;700&family=Unbounded:wght@500;800&display=swap" rel="stylesheet">
+<!-- bump ?v= on every release: GitHub Pages lets browsers cache files for 10 min -->
+<link rel="stylesheet" href="../css/site.css?v=13">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+
+<!-- loader -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader-mark">◆ ZERNO</div>
+  <div class="loader-count"><span id="loaderNum">0</span>%</div>
+</div>
+
+<!-- background layers (behind the 3D) -->
+<div class="sun" id="sun" aria-hidden="true"></div>
+<div class="hero-title" id="heroTitle" aria-hidden="true">
+  <span class="w w-l"><span>Order</span></span>
+  <span class="w w-r"><span>Coffee</span></span>
+</div>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<!-- coffee floods the screen on the way into the drop scene -->
+<div class="flood" id="flood" aria-hidden="true">
+  <svg class="flood-wave" viewBox="0 0 1200 100" preserveAspectRatio="none">
+    <path class="w1" d="M0 60 C150 20 300 100 450 60 S750 20 900 60 S1050 100 1200 60 V100 H0Z"/>
+    <path class="w2" d="M0 70 C200 40 350 100 600 70 S950 40 1200 70 V100 H0Z"/>
+  </svg>
+</div>
+<div class="grain" id="grain" aria-hidden="true"></div>
+
+<div class="cursor" id="cursor" aria-hidden="true"><i class="cursor-ring"></i><i class="cursor-dot"></i></div>
+
+<!-- fixed UI -->
+<header class="nav" id="nav">
+  <a class="logo" href="#top" data-chapter="0">◆ ZERNO</a>
+  <nav class="pill" aria-label="Sections">
+    <a href="#menu" data-chapter="4">Menu</a>
+    <a href="#grind" data-chapter="1">Beans</a>
+    <a href="#bloom" data-chapter="2">About</a>
+    <a href="#visit">Contact</a>
+  </nav>
+  <div class="nav-end">
+    <a class="lang" href="../" hreflang="ru" lang="ru" aria-label="Русская версия">RU</a>
+    <button class="sound" id="sound" aria-pressed="false" aria-label="Turn sound on">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path class="wave" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/><path class="mute" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
+    </button>
+    <a class="cta" href="#menu" data-chapter="4">Order</a>
+  </div>
+  <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="mnav"><i></i><i></i></button>
+</header>
+
+<!-- phone menu -->
+<nav class="mnav" id="mnav" aria-label="Sections" hidden>
+  <a href="#menu" data-chapter="4">Menu</a>
+  <a href="#grind" data-chapter="1">Beans</a>
+  <a href="#bloom" data-chapter="2">About</a>
+  <a href="#visit">Contact</a>
+  <button class="mnav-sound" id="soundM" aria-pressed="false">Sound <span>off</span></button>
+  <a class="mnav-lang" href="../" hreflang="ru" lang="ru">Русский</a>
+</nav>
+
+<nav class="dots" id="dots" aria-label="Scenes">
+  <button data-chapter="0" aria-label="Order coffee"></button>
+  <button data-chapter="1" aria-label="Grind"></button>
+  <button data-chapter="2" aria-label="Pour"></button>
+  <button data-chapter="3" aria-label="Extraction"></button>
+  <button data-chapter="4" aria-label="Menu"></button>
+</nav>
+
+<main id="top">
+  <section class="story" id="story">
+    <div class="stage">
+
+      <!-- 0 · hero -->
+      <div class="ch ch0" id="ch0">
+        <h1 class="sr-only">ZERNO — order coffee</h1>
+        <div class="hero-script script" aria-hidden="true"><span>fresh</span></div>
+        <div class="hero-copy">
+          <p class="lead"><span>Single-origin coffee, ground to&nbsp;order and poured slow.</span></p>
+          <a class="btn" href="#menu" data-chapter="4"><span>Order</span></a>
+        </div>
+        <div class="scroll-cue" aria-hidden="true"><span>Scroll</span><i></i></div>
+      </div>
+
+      <!-- 1 · grind -->
+      <div class="ch ch1 side" id="grind">
+        <div class="label"><span class="n">01</span><i></i><span>Grind</span></div>
+        <h2 class="title"><span class="ln"><span>Precise</span></span><span class="ln"><span>grind</span></span></h2>
+        <p class="body">Steel burrs and 40 grind settings. Every portion is ground a minute before brewing.</p>
+      </div>
+
+      <!-- 2 · bloom -->
+      <div class="ch ch2 side" id="bloom">
+        <div class="label"><span class="n">02</span><i></i><span>Bloom</span></div>
+        <h2 class="title"><span class="ln"><span>Slow</span></span><span class="ln"><span>pour</span></span><em class="script">ritual</em></h2>
+        <dl class="stats">
+          <div><dt>Water</dt><dd id="statTemp">92°C</dd></div>
+          <div><dt>Coffee</dt><dd id="statDose">18 g</dd></div>
+          <div><dt>Time</dt><dd id="statTime">3:30</dd></div>
+        </dl>
+      </div>
+
+      <!-- 3 · extraction -->
+      <div class="ch ch3" id="drop">
+        <div class="label"><span class="n">03</span><i></i><span>Extraction</span></div>
+        <h2 class="title"><span class="ln"><span>Every drop</span></span></h2>
+        <em class="script drop-script">matters</em>
+      </div>
+
+      <!-- 4 · ritual / menu -->
+      <div class="ch ch4" id="menu">
+        <div class="ritual-head">
+          <div class="label"><span class="n">04</span><i></i><span>Ritual</span></div>
+          <h2 class="title"><span class="ln"><span>Pick your <em class="script">ritual</em></span></span></h2>
+        </div>
+        <!-- data-lenis-prevent-touch: swipes on the strip stay native so it scrolls sideways -->
+        <ul class="cards" id="cards" data-lenis-prevent-touch>
+          <li class="card" data-thumb="espresso" data-price="2.5"><div class="ph"></div><h3>Espresso</h3><div class="row"><span>$2.50</span><button aria-label="Add espresso">+</button></div></li>
+          <li class="card" data-thumb="pourover" data-price="3.8"><div class="ph"></div><h3>Pour-over V60</h3><div class="row"><span>$3.80</span><button aria-label="Add pour-over">+</button></div></li>
+          <li class="card" data-thumb="latte" data-price="3.5"><div class="ph"></div><h3>Cappuccino</h3><div class="row"><span>$3.50</span><button aria-label="Add cappuccino">+</button></div></li>
+          <li class="card" data-thumb="beans" data-price="12"><div class="ph"></div><h3>Ethiopia beans, 250 g</h3><div class="row"><span>$12</span><button aria-label="Add beans">+</button></div></li>
+          <li class="card" data-thumb="kettle" data-price="59"><div class="ph"></div><h3>Gooseneck kettle</h3><div class="row"><span>$59</span><button aria-label="Add kettle">+</button></div></li>
+          <li class="card" data-thumb="grinder" data-price="149"><div class="ph"></div><h3>Coffee grinder</h3><div class="row"><span>$149</span><button aria-label="Add grinder">+</button></div></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 5 · brew at home -->
+  <section class="brew" id="brew">
+    <div class="brew-grid">
+      <div class="brew-copy">
+        <div class="label reveal"><span class="n">05</span><i></i><span>At home</span></div>
+        <h2 class="title reveal">Brew<br>at home</h2>
+        <p class="body reveal">A recipe for the V60 dripper. Choose how many cups and how strong, and we'll do the math.</p>
+        <div class="brew-controls reveal">
+          <div class="seg" role="radiogroup" aria-label="How many cups" id="bCups">
+            <button role="radio" aria-checked="true" data-v="1">1 cup</button>
+            <button role="radio" aria-checked="false" data-v="2">2</button>
+            <button role="radio" aria-checked="false" data-v="3">3</button>
+            <button role="radio" aria-checked="false" data-v="4">4</button>
+          </div>
+          <div class="seg" role="radiogroup" aria-label="Strength" id="bStrength">
+            <button role="radio" aria-checked="false" data-v="17">Lighter</button>
+            <button role="radio" aria-checked="true" data-v="16">Balanced</button>
+            <button role="radio" aria-checked="false" data-v="15">Stronger</button>
+          </div>
+        </div>
+      </div>
+      <div class="brew-card reveal">
+        <dl class="brew-figures">
+          <div><dt>Coffee</dt><dd id="bCoffee">16 g</dd></div>
+          <div><dt>Water</dt><dd id="bWater">250 ml</dd></div>
+          <div><dt>Temperature</dt><dd>92°C</dd></div>
+          <div><dt>Time</dt><dd id="bTime">2:30</dd></div>
+        </dl>
+        <div class="brew-vis" aria-hidden="true">
+          <div class="carafe"><div class="carafe-fill" id="bFill"><i></i></div><span class="mark m1"></span><span class="mark m2"></span><span class="mark m3"></span></div>
+        </div>
+        <ol class="brew-steps" id="bSteps"></ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · visit -->
+  <section class="visit" id="visit">
+    <div class="visit-grid">
+      <div class="visit-copy">
+        <div class="label reveal"><span class="n">06</span><i></i><span>Visit</span></div>
+        <h2 class="title reveal">Come in<br>for a cup</h2>
+        <dl class="info">
+          <div class="reveal"><dt>Address</dt><dd>12 Example St.</dd></div>
+          <div class="reveal"><dt>Hours</dt><dd>Daily 8:00–22:00</dd></div>
+          <div class="reveal"><dt>Phone</dt><dd><a href="tel:+10000000000">+1 (000) 000-0000</a></dd></div>
+          <div class="reveal"><dt>Social</dt><dd><a href="#">Telegram</a> · <a href="#">Instagram</a></dd></div>
+        </dl>
+        <a class="btn reveal" href="#"><span>Get directions</span></a>
+      </div>
+      <div class="map reveal" aria-label="Map">
+        <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="400" height="300" fill="var(--map-bg)"/>
+          <g stroke="var(--map-road)" stroke-linecap="round" fill="none">
+            <path d="M-10 190 L410 170" stroke-width="16"/>
+            <path d="M200 -10 L215 310" stroke-width="12"/>
+            <path d="M-10 40 L180 300" stroke-width="8"/>
+            <path d="M260 -10 Q300 120 410 140" stroke-width="7"/>
+            <path d="M40 -10 L60 310" stroke-width="5"/>
+            <path d="M330 300 L350 -10" stroke-width="5"/>
+          </g>
+          <g fill="var(--map-block)">
+            <rect x="80" y="40" width="90" height="100" rx="6"/>
+            <rect x="232" y="20" width="60" height="70" rx="6"/>
+            <rect x="240" y="200" width="70" height="80" rx="6"/>
+            <rect x="80" y="214" width="60" height="70" rx="6"/>
+            <rect x="350" y="185" width="50" height="90" rx="6"/>
+          </g>
+        </svg>
+        <div class="pin" id="pin"><span>ZERNO</span></div>
+      </div>
+    </div>
+    <footer class="foot">
+      <span class="foot-logo">◆ ZERNO</span>
+      <span>© 2026 · demo project · site by <a href="https://github.com/iSaturnalia">iSaturnalia</a> · <span id="lightNote"></span></span>
+    </footer>
+  </section>
+</main>
+
+<!-- product card with a live 3D model -->
+<div class="pm" id="pm" hidden>
+  <div class="pm-backdrop" data-close></div>
+  <div class="pm-card" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+    <button class="pm-close" data-close aria-label="Close">×</button>
+    <div class="pm-stage">
+      <canvas id="pmCanvas"></canvas>
+      <p class="pm-hint" id="pmHint"></p>
+      <button class="pm-reset" id="pmReset" hidden>Clear</button>
+    </div>
+    <div class="pm-info">
+      <p class="pm-meta" id="pmMeta"></p>
+      <h3 id="pmTitle"></h3>
+      <p class="pm-desc" id="pmDesc"></p>
+      <div class="pm-buy"><span class="pm-price" id="pmPrice"></span><button class="btn pm-add" id="pmAdd"><span>Add to cart</span></button></div>
+    </div>
+  </div>
+</div>
+
+<!-- cart drawer -->
+<aside class="cart" id="cart" hidden>
+  <div class="cart-backdrop" data-close-cart></div>
+  <div class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <header class="cart-head"><h3 id="cartTitle">Cart</h3><button class="cart-close" data-close-cart aria-label="Close cart">×</button></header>
+    <ul class="cart-list" id="cartList"></ul>
+    <p class="cart-empty" id="cartEmpty">Nothing here yet — head to the menu.</p>
+    <footer class="cart-foot">
+      <div class="cart-total"><span>Total</span><strong id="cartTotal">$0</strong></div>
+      <button class="btn cart-order" id="cartOrder"><span>Check out</span></button>
+      <p class="cart-note" id="cartNote" hidden>Thanks! This is a demo site: the order wasn't sent anywhere.</p>
+    </footer>
+  </div>
+</aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+<script type="module" src="../js/site.js?v=13"></script>
+</body>
+</html>
